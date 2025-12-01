@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Admin | Manage Apps</title>
+    <title>Nexus Admin | File Uploads</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,7 +14,6 @@
             --bg-dark: #0f1014;
             --bg-panel: #1b1e26;
             --primary: #00d4ff;
-            --primary-dark: #009ec4;
             --danger: #ff4757;
             --warning: #ffa502;
             --text-main: #fff;
@@ -28,11 +27,9 @@
         /* --- LOGIN --- */
         #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #003b55 0%, #0f1014 60%); z-index: 9999; position: absolute; width: 100%; top: 0; left: 0; }
         .login-box { background: rgba(27, 30, 38, 0.9); padding: 40px; border-radius: 12px; width: 350px; border: 1px solid var(--border); text-align: center; backdrop-filter: blur(10px); }
-        .login-box h2 { margin-bottom: 20px; color: var(--primary); }
 
         /* --- DASHBOARD --- */
         #dashboard { display: none; height: 100vh; display: flex; }
-        
         .sidebar { width: 250px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; }
         .brand { font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .menu-item { padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
@@ -42,52 +39,84 @@
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background-color: var(--bg-dark); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         
-        /* FORM STYLES */
+        /* FORM */
         .editor-container { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px; }
         .card-panel { background: var(--bg-panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
-        
-        input, textarea { width: 100%; background: #0f1014; border: 1px solid var(--border); padding: 12px 15px; color: #fff; border-radius: 6px; transition: 0.3s; }
+        input[type="text"], textarea { width: 100%; background: #0f1014; border: 1px solid var(--border); padding: 12px 15px; color: #fff; border-radius: 6px; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--primary); }
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        /* --- DYNAMIC SCREENSHOTS STYLES --- */
-        .screenshot-wrapper { display: flex; flex-direction: column; gap: 10px; }
-        .sc-row { display: flex; gap: 10px; }
+        /* --- NEW FILE UPLOAD STYLES --- */
+        .upload-box {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(0,0,0,0.2);
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .upload-box:hover { border-color: var(--primary); background: rgba(0, 212, 255, 0.05); }
+        .upload-box i { font-size: 24px; color: var(--text-muted); margin-bottom: 5px; }
+        .upload-box span { font-size: 12px; color: var(--text-muted); }
+        
+        /* Preview Image inside Upload Box */
+        .uploaded-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0; left: 0;
+            opacity: 0.6;
+        }
+        .upload-box.has-image i, .upload-box.has-image span { display: none; }
+        .upload-box.has-image .uploaded-preview { opacity: 1; }
+
+        /* Screenshot Grid */
+        #screenshots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .sc-item { position: relative; height: 100px; }
+        .btn-remove-sc { 
+            position: absolute; top: -5px; right: -5px; 
+            background: var(--danger); color: white; border: none; 
+            width: 20px; height: 20px; border-radius: 50%; cursor: pointer; z-index: 10;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
+
         .btn-plus { 
             background: #222; border: 1px solid var(--primary); color: var(--primary); 
             padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 10px;
             font-weight: bold; transition: 0.2s;
         }
         .btn-plus:hover { background: var(--primary); color: #000; }
-        .btn-remove-sc { background: #333; color: var(--danger); border: 1px solid #444; width: 45px; border-radius: 6px; cursor: pointer; }
 
         /* BUTTONS */
-        .btn-primary { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .edit-controls { display: none; gap: 10px; }
         .btn-update { flex: 1; background: var(--warning); color: #000; padding: 15px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .btn-cancel { width: 100px; background: #333; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; }
 
-        /* PREVIEW & LIST */
+        /* PREVIEW AREA */
         .preview-area { position: sticky; top: 20px; }
         .preview-card { background-color: #1b1e26; border-radius: 12px; overflow: hidden; width: 100%; max-width: 300px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1); }
         .preview-img-wrapper { width: 100%; padding-top: 56.25%; position: relative; background: #252830; }
         .preview-img-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .preview-content { padding: 15px; }
-        
+
+        /* LIST */
         .manage-section { border-top: 1px solid var(--border); padding-top: 20px; }
-        .manage-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .search-box { position: relative; width: 250px; }
-        .search-box input { padding: 8px 15px 8px 35px; border-radius: 20px; font-size: 13px; background: #222; }
-        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
-        
         .app-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); }
         .app-info { display: flex; align-items: center; gap: 15px; }
         .app-info img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-        .action-btns { display: flex; gap: 10px; }
-        .btn-icon { width: 35px; height: 35px; border-radius: 5px; border: none; cursor: pointer; color: white; display:flex; align-items:center; justify-content:center;}
+        .btn-icon { width: 35px; height: 35px; border-radius: 5px; border: none; cursor: pointer; color: white; display:flex; align-items:center; justify-content:center; margin-left: 5px; }
         .btn-edit { background: rgba(255, 165, 2, 0.2); color: var(--warning); }
         .btn-delete { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
 
@@ -118,7 +147,7 @@
         <div class="main-content">
             <div class="header">
                 <h1>App Management</h1>
-                <div class="user-info">Admin Mode</div>
+                <div class="user-info">File Upload Mode</div>
             </div>
 
             <div class="editor-container">
@@ -127,14 +156,22 @@
                     
                     <div class="form-group">
                         <label>App Name</label>
-                        <input type="text" id="appName" placeholder="e.g. Minecraft" oninput="updatePreview()">
+                        <input type="text" id="appName" placeholder="e.g. Minecraft" oninput="updatePreviewTitle()">
                     </div>
 
                     <div class="row-2">
+                        <!-- LOGO UPLOAD -->
                         <div class="form-group">
-                            <label>Logo URL</label>
-                            <input type="text" id="appLogo" placeholder="https://..." oninput="updatePreview()">
+                            <label>App Logo</label>
+                            <input type="file" id="logoInput" hidden accept="image/*" onchange="handleImageUpload(this, 'logo-preview-box')">
+                            <label for="logoInput" class="upload-box" id="logo-preview-box">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Click to Upload Logo</span>
+                            </label>
+                            <!-- Hidden input to store base64 string -->
+                            <input type="hidden" id="logoBase64">
                         </div>
+
                         <div class="form-group">
                             <label>Download Link</label>
                             <input type="text" id="appDownload" placeholder="Drive / MediaFire Link">
@@ -146,15 +183,14 @@
                         <textarea id="appDesc" rows="3" placeholder="Description..."></textarea>
                     </div>
 
-                    <!-- UNLIMITED SCREENSHOTS SECTION -->
+                    <!-- SCREENSHOTS UPLOAD -->
                     <div class="form-group">
-                        <label>Screenshots URLs</label>
-                        <div id="screenshots-container" class="screenshot-wrapper">
-                            <!-- 4 Default Inputs will be generated here by JS -->
+                        <label>Screenshots (Upload Files)</label>
+                        <div id="screenshots-grid">
+                            <!-- 4 Default Upload Boxes -->
                         </div>
                         
-                        <!-- THE PLUS BUTTON -->
-                        <button class="btn-plus" onclick="addOneScreenshotInput()">
+                        <button class="btn-plus" onclick="addScreenshotBox()">
                             <i class="fas fa-plus"></i> ADD MORE SCREENSHOTS
                         </button>
                     </div>
@@ -167,6 +203,7 @@
                     </div>
                 </div>
 
+                <!-- PREVIEW -->
                 <div class="preview-area">
                     <div style="text-align:center; color:#888; margin-bottom:10px; font-size:12px;">LIVE PREVIEW</div>
                     <div class="preview-card">
@@ -181,12 +218,9 @@
             </div>
 
             <div class="manage-section">
-                <div class="manage-header-row">
-                    <div class="manage-title">Published Apps</div>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchApps" placeholder="Search..." onkeyup="filterApps()">
-                    </div>
+                <div class="header">
+                    <h3>Published Apps</h3>
+                    <input type="text" id="searchApps" placeholder="Search..." onkeyup="filterApps()" style="width:200px; padding:5px;">
                 </div>
                 <div id="apps-list">
                     <div style="text-align:center; color:#666;">Loading...</div>
@@ -227,77 +261,125 @@
         onAuthStateChanged(auth, user => {
             document.getElementById('login-screen').style.display = user ? 'none' : 'flex';
             document.getElementById('dashboard').style.display = user ? 'flex' : 'none';
-            if(user) resetForm(); // Initialize form with 4 inputs on login
+            if(user) resetForm();
         });
 
-        // --- DYNAMIC SCREENSHOT LOGIC ---
-        function generateScreenshotInputs(existingData = []) {
-            const container = document.getElementById('screenshots-container');
-            container.innerHTML = ""; // Clear
-            
-            // Determine how many inputs to show (At least 4)
-            let count = Math.max(4, existingData.length);
-            
-            for (let i = 0; i < count; i++) {
-                const val = existingData[i] || "";
-                const placeholder = `Screenshot ${i + 1} URL`;
-                
-                const div = document.createElement('div');
-                div.className = 'sc-row';
-                div.innerHTML = `
-                    <input type="text" class="sc-input" placeholder="${placeholder}" value="${val}">
-                    ${i >= 4 ? `<button class="btn-remove-sc" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>` : ''}
-                `;
-                container.appendChild(div);
-            }
+        // --- IMAGE COMPRESSION & BASE64 LOGIC ---
+        // This makes sure the DB doesn't crash by shrinking images
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Resize to max 800px width
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Compress quality to 0.7
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl);
+                    }
+                }
+            });
         }
 
-        // The "+" button functionality
-        window.addOneScreenshotInput = () => {
-            const container = document.getElementById('screenshots-container');
-            const count = container.children.length + 1;
+        // Handle File Select
+        window.handleImageUpload = async (input, previewBoxId) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const base64 = await compressImage(file);
+            const box = document.getElementById(previewBoxId);
+            
+            // Show preview inside the box
+            box.innerHTML = `<img src="${base64}" class="uploaded-preview">`;
+            box.classList.add('has-image');
+
+            // Save to hidden input or data attribute
+            if(previewBoxId === 'logo-preview-box') {
+                document.getElementById('logoBase64').value = base64;
+                document.getElementById('prev-img').src = base64; // Update Live Preview
+            } else {
+                // For screenshots, we store in the input's data attribute
+                input.setAttribute('data-base64', base64);
+            }
+        };
+
+        // --- DYNAMIC SCREENSHOT BOXES ---
+        window.addScreenshotBox = (existingBase64 = null) => {
+            const container = document.getElementById('screenshots-grid');
+            const id = Date.now() + Math.random(); // Unique ID
+            
             const div = document.createElement('div');
-            div.className = 'sc-row';
+            div.className = 'sc-item';
             div.innerHTML = `
-                <input type="text" class="sc-input" placeholder="Screenshot ${count} URL">
-                <button class="btn-remove-sc" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                <input type="file" id="file-${id}" hidden accept="image/*" onchange="handleImageUpload(this, 'box-${id}')" ${existingBase64 ? 'data-base64="'+existingBase64+'"' : ''}>
+                <label for="file-${id}" class="upload-box ${existingBase64 ? 'has-image' : ''}" id="box-${id}">
+                    ${existingBase64 ? `<img src="${existingBase64}" class="uploaded-preview">` : '<i class="fas fa-image"></i>'}
+                </label>
+                <button class="btn-remove-sc" onclick="this.parentElement.remove()">&times;</button>
             `;
             container.appendChild(div);
+        };
+
+        // Initialize 4 empty boxes
+        function initScreenshotBoxes(screenshots = []) {
+            const container = document.getElementById('screenshots-grid');
+            container.innerHTML = "";
+            
+            let count = Math.max(4, screenshots.length);
+            for(let i=0; i<count; i++) {
+                addScreenshotBox(screenshots[i] || null);
+            }
         }
 
         // SAVE
         window.saveGame = () => {
-            // Collect Screenshots into Array
-            const inputs = document.querySelectorAll('.sc-input');
+            const name = document.getElementById('appName').value;
+            const logo = document.getElementById('logoBase64').value;
+            const desc = document.getElementById('appDesc').value;
+            const download = document.getElementById('appDownload').value;
+            
+            // Gather Screenshots
+            const scInputs = document.querySelectorAll('#screenshots-grid input[type="file"]');
             const ssArray = [];
-            inputs.forEach(inp => {
-                if(inp.value.trim() !== "") ssArray.push(inp.value.trim());
+            scInputs.forEach(inp => {
+                const b64 = inp.getAttribute('data-base64');
+                if(b64) ssArray.push(b64);
             });
 
-            const gameData = {
-                name: document.getElementById('appName').value,
-                logo: document.getElementById('appLogo').value,
-                desc: document.getElementById('appDesc').value,
-                download: document.getElementById('appDownload').value,
-                screenshots: ssArray, // Saving as array
-                timestamp: Date.now()
-            };
-
-            if(!gameData.name || !gameData.download) {
-                showToast("Name and Link required!", "error");
+            if(!name || !download || !logo) {
+                showToast("Name, Logo, and Download Link are required!", "error");
                 return;
             }
 
-            if (currentEditId) {
-                update(ref(db, 'games/' + currentEditId), gameData)
-                    .then(() => { showToast("Updated Successfully!", "success"); cancelEdit(); });
-            } else {
-                push(ref(db, 'games'), gameData)
-                    .then(() => { showToast("Published Successfully!", "success"); resetForm(); });
-            }
+            const gameData = {
+                name: name,
+                logo: logo,
+                desc: desc,
+                download: download,
+                screenshots: ssArray,
+                timestamp: Date.now()
+            };
+
+            const dbRef = currentEditId ? ref(db, 'games/' + currentEditId) : ref(db, 'games');
+            const action = currentEditId ? update(dbRef, gameData) : push(dbRef, gameData);
+
+            action.then(() => {
+                showToast(currentEditId ? "Updated!" : "Published!", "success");
+                if(currentEditId) cancelEdit(); else resetForm();
+            }).catch(e => showToast(e.message, "error"));
         };
 
-        // RENDER LIST
+        // LIST
         onValue(ref(db, 'games'), (snapshot) => {
             const data = snapshot.val();
             allGamesData = data || {};
@@ -320,9 +402,7 @@
                     `;
                     list.appendChild(item);
                 });
-            } else {
-                list.innerHTML = "<div style='text-align:center; padding:20px; color:#666;'>No apps found.</div>";
-            }
+            } else { list.innerHTML = "No apps found."; }
         });
 
         // EDIT
@@ -331,22 +411,27 @@
             const game = allGamesData[key];
 
             document.getElementById('appName').value = game.name;
-            document.getElementById('appLogo').value = game.logo;
-            document.getElementById('appDownload').value = game.download;
             document.getElementById('appDesc').value = game.desc;
+            document.getElementById('appDownload').value = game.download;
             
-            // Handle Screenshots (Check if array or old format)
-            let existingSS = [];
-            if(game.screenshots && Array.isArray(game.screenshots)) {
-                existingSS = game.screenshots;
-            } else {
-                if(game.sc1) existingSS.push(game.sc1);
-                if(game.sc2) existingSS.push(game.sc2);
-                if(game.sc3) existingSS.push(game.sc3);
-                if(game.sc4) existingSS.push(game.sc4);
+            // Set Logo
+            document.getElementById('logoBase64').value = game.logo;
+            const logoBox = document.getElementById('logo-preview-box');
+            logoBox.innerHTML = `<img src="${game.logo}" class="uploaded-preview">`;
+            logoBox.classList.add('has-image');
+            document.getElementById('prev-img').src = game.logo;
+
+            // Set Screenshots
+            let ss = [];
+            if(game.screenshots && Array.isArray(game.screenshots)) ss = game.screenshots;
+            else {
+                // Old data compatibility
+                if(game.sc1) ss.push(game.sc1);
+                if(game.sc2) ss.push(game.sc2);
+                if(game.sc3) ss.push(game.sc3);
+                if(game.sc4) ss.push(game.sc4);
             }
-            generateScreenshotInputs(existingSS);
-            updatePreview();
+            initScreenshotBoxes(ss);
 
             document.getElementById('btn-publish').style.display = 'none';
             document.getElementById('edit-controls').style.display = 'flex';
@@ -362,39 +447,35 @@
             document.getElementById('form-title').innerText = "Add New App";
         };
 
-        window.deleteGame = (key) => {
-            if(confirm("Delete this app?")) remove(ref(db, 'games/' + key));
-        };
-
-        window.filterApps = () => {
-            const query = document.getElementById('searchApps').value.toLowerCase();
-            document.querySelectorAll('.app-item').forEach(item => {
-                item.style.display = item.getAttribute('data-name').includes(query) ? 'flex' : 'none';
-            });
-        };
-
-        window.updatePreview = () => {
-            const title = document.getElementById('appName').value;
-            const logo = document.getElementById('appLogo').value;
-            document.getElementById('prev-title').innerText = title || "App Name";
-            if(logo) document.getElementById('prev-img').src = logo;
+        window.deleteGame = (key) => { if(confirm("Delete?")) remove(ref(db, 'games/' + key)); };
+        
+        window.updatePreviewTitle = () => {
+            document.getElementById('prev-title').innerText = document.getElementById('appName').value || "App Name";
         };
 
         function resetForm() {
-            document.querySelectorAll('input, textarea').forEach(i => i.value = '');
-            generateScreenshotInputs([]); // Resets to 4 empty inputs
-            updatePreview();
+            document.querySelectorAll('input[type="text"], textarea').forEach(i => i.value = '');
+            document.getElementById('logoBase64').value = '';
+            
+            // Reset Logo Box
+            const logoBox = document.getElementById('logo-preview-box');
+            logoBox.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><span>Click to Upload Logo</span>';
+            logoBox.classList.remove('has-image');
+            document.getElementById('prev-img').src = "https://via.placeholder.com/300?text=Logo";
+
+            initScreenshotBoxes([]); // Reset to 4 empty
+        }
+
+        window.filterApps = () => {
+            const q = document.getElementById('searchApps').value.toLowerCase();
+            document.querySelectorAll('.app-item').forEach(i => i.style.display = i.getAttribute('data-name').includes(q) ? 'flex' : 'none');
         }
 
         function showToast(msg, type) {
-            const toast = document.getElementById("toast");
-            toast.innerText = msg;
-            toast.className = "show " + type;
-            setTimeout(() => { toast.className = ""; }, 3000);
+            const t = document.getElementById("toast");
+            t.innerText = msg; t.className = "show " + type;
+            setTimeout(() => t.className = "", 3000);
         }
-        
-        // Initial setup
-        generateScreenshotInputs([]);
     </script>
 </body>
 </html>
