@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Admin | File Uploads</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --bg-dark: #0f1014;
+            --bg-panel: #1b1e26;
+            --primary: #00d4ff;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --text-main: #fff;
+            --text-muted: #8898aa;
+            --border: rgba(255,255,255,0.1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; outline: none; }
+        body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+        /* --- LOGIN --- */
+        #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #003b55 0%, #0f1014 60%); z-index: 9999; position: absolute; width: 100%; top: 0; left: 0; }
+        .login-box { background: rgba(27, 30, 38, 0.9); padding: 40px; border-radius: 12px; width: 350px; border: 1px solid var(--border); text-align: center; backdrop-filter: blur(10px); }
+
+        /* --- DASHBOARD --- */
+        #dashboard { display: none; height: 100vh; display: flex; }
+        .sidebar { width: 250px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; }
+        .brand { font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .menu-item { padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .menu-item.active, .menu-item:hover { background: rgba(0, 212, 255, 0.1); color: var(--primary); }
+        .logout-btn { margin-top: auto; color: var(--danger); }
+
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; background-color: var(--bg-dark); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
+        /* FORM */
+        .editor-container { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px; }
+        .card-panel { background: var(--bg-panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        input[type="text"], textarea { width: 100%; background: #0f1014; border: 1px solid var(--border); padding: 12px 15px; color: #fff; border-radius: 6px; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* --- NEW FILE UPLOAD STYLES --- */
+        .upload-box {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(0,0,0,0.2);
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .upload-box:hover { border-color: var(--primary); background: rgba(0, 212, 255, 0.05); }
+        .upload-box i { font-size: 24px; color: var(--text-muted); margin-bottom: 5px; }
+        .upload-box span { font-size: 12px; color: var(--text-muted); }
+        
+        /* Preview Image inside Upload Box */
+        .uploaded-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0; left: 0;
+            opacity: 0.6;
+        }
+        .upload-box.has-image i, .upload-box.has-image span { display: none; }
+        .upload-box.has-image .uploaded-preview { opacity: 1; }
+
+        /* Screenshot Grid */
+        #screenshots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .sc-item { position: relative; height: 100px; }
+        .btn-remove-sc { 
+            position: absolute; top: -5px; right: -5px; 
+            background: var(--danger); color: white; border: none; 
+            width: 20px; height: 20px; border-radius: 50%; cursor: pointer; z-index: 10;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
+
+        .btn-plus { 
+            background: #222; border: 1px solid var(--primary); color: var(--primary); 
+            padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 10px;
+            font-weight: bold; transition: 0.2s;
+        }
+        .btn-plus:hover { background: var(--primary); color: #000; }
+
+        /* BUTTONS */
+        .btn-primary { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .edit-controls { display: none; gap: 10px; }
+        .btn-update { flex: 1; background: var(--warning); color: #000; padding: 15px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-cancel { width: 100px; background: #333; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; }
+
+        /* PREVIEW AREA */
+        .preview-area { position: sticky; top: 20px; }
+        .preview-card { background-color: #1b1e26; border-radius: 12px; overflow: hidden; width: 100%; max-width: 300px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1); }
+        .preview-img-wrapper { width: 100%; padding-top: 56.25%; position: relative; background: #252830; }
+        .preview-img-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .preview-content { padding: 15px; }
+
+        /* LIST */
+        .manage-section { border-top: 1px solid var(--border); padding-top: 20px; }
+        .app-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .app-info { display: flex; align-items: center; gap: 15px; }
+        .app-info img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .btn-icon { width: 35px; height: 35px; border-radius: 5px; border: none; cursor: pointer; color: white; display:flex; align-items:center; justify-content:center; margin-left: 5px; }
+        .btn-edit { background: rgba(255, 165, 2, 0.2); color: var(--warning); }
+        .btn-delete { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
+
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 1000; right: 30px; bottom: 30px; border-left: 5px solid var(--primary); transform: translateY(100px); transition: transform 0.3s; }
+        #toast.show { visibility: visible; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Notification</div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>ADMIN LOGIN</h2>
+            <div class="form-group"><input type="email" id="email" placeholder="Email"></div>
+            <div class="form-group"><input type="password" id="password" placeholder="Password"></div>
+            <button class="btn-primary" onclick="login()">ENTER PANEL</button>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="sidebar">
+            <div class="brand"><i class="fas fa-shield-alt"></i> ADMIN PANEL</div>
+            <div class="menu-item active"><i class="fas fa-gamepad"></i> Manage Apps</div>
+            <div class="menu-item logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>App Management</h1>
+                <div class="user-info">File Upload Mode</div>
+            </div>
+
+            <div class="editor-container">
+                <div class="card-panel">
+                    <h3 id="form-title" style="margin-top:0; color:var(--primary);">Add New App</h3>
+                    
+                    <div class="form-group">
+                        <label>App Name</label>
+                        <input type="text" id="appName" placeholder="e.g. Minecraft" oninput="updatePreviewTitle()">
+                    </div>
+
+                    <div class="row-2">
+                        <!-- LOGO UPLOAD -->
+                        <div class="form-group">
+                            <label>App Logo</label>
+                            <input type="file" id="logoInput" hidden accept="image/*" onchange="handleImageUpload(this, 'logo-preview-box')">
+                            <label for="logoInput" class="upload-box" id="logo-preview-box">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Click to Upload Logo</span>
+                            </label>
+                            <!-- Hidden input to store base64 string -->
+                            <input type="hidden" id="logoBase64">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Download Link</label>
+                            <input type="text" id="appDownload" placeholder="Drive / MediaFire Link">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="appDesc" rows="3" placeholder="Description..."></textarea>
+                    </div>
+
+                    <!-- SCREENSHOTS UPLOAD -->
+                    <div class="form-group">
+                        <label>Screenshots (Upload Files)</label>
+                        <div id="screenshots-grid">
+                            <!-- 4 Default Upload Boxes -->
+                        </div>
+                        
+                        <button class="btn-plus" onclick="addScreenshotBox()">
+                            <i class="fas fa-plus"></i> ADD MORE SCREENSHOTS
+                        </button>
+                    </div>
+
+                    <button id="btn-publish" class="btn-primary" onclick="saveGame()">PUBLISH APP</button>
+                    
+                    <div id="edit-controls" class="edit-controls">
+                        <button class="btn-update" onclick="saveGame()">UPDATE APP</button>
+                        <button class="btn-cancel" onclick="cancelEdit()">CANCEL</button>
+                    </div>
+                </div>
+
+                <!-- PREVIEW -->
+                <div class="preview-area">
+                    <div style="text-align:center; color:#888; margin-bottom:10px; font-size:12px;">LIVE PREVIEW</div>
+                    <div class="preview-card">
+                        <div class="preview-img-wrapper">
+                            <img id="prev-img" src="https://via.placeholder.com/300?text=Logo">
+                        </div>
+                        <div class="preview-content">
+                            <h3 id="prev-title">App Name</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manage-section">
+                <div class="header">
+                    <h3>Published Apps</h3>
+                    <input type="text" id="searchApps" placeholder="Search..." onkeyup="filterApps()" style="width:200px; padding:5px;">
+                </div>
+                <div id="apps-list">
+                    <div style="text-align:center; color:#666;">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCn1FBaxDwbvC28VWXAcq557uCidl-JHy0",
+            authDomain: "app-store-6b5d4.firebaseapp.com",
+            databaseURL: "https://app-store-6b5d4-default-rtdb.firebaseio.com",
+            projectId: "app-store-6b5d4",
+            storageBucket: "app-store-6b5d4.firebasestorage.app",
+            messagingSenderId: "55022892860",
+            appId: "1:55022892860:web:f48865da1539854bf8d039"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentEditId = null;
+        let allGamesData = {};
+
+        // AUTH
+        window.login = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(err => showToast(err.message, "error"));
+        };
+        window.logout = () => signOut(auth);
+        onAuthStateChanged(auth, user => {
+            document.getElementById('login-screen').style.display = user ? 'none' : 'flex';
+            document.getElementById('dashboard').style.display = user ? 'flex' : 'none';
+            if(user) resetForm();
+        });
+
+        // --- IMAGE COMPRESSION & BASE64 LOGIC ---
+        // This makes sure the DB doesn't crash by shrinking images
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Resize to max 800px width
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Compress quality to 0.7
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl);
+                    }
+                }
+            });
+        }
+
+        // Handle File Select
+        window.handleImageUpload = async (input, previewBoxId) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const base64 = await compressImage(file);
+            const box = document.getElementById(previewBoxId);
+            
+            // Show preview inside the box
+            box.innerHTML = `<img src="${base64}" class="uploaded-preview">`;
+            box.classList.add('has-image');
+
+            // Save to hidden input or data attribute
+            if(previewBoxId === 'logo-preview-box') {
+                document.getElementById('logoBase64').value = base64;
+                document.getElementById('prev-img').src = base64; // Update Live Preview
+            } else {
+                // For screenshots, we store in the input's data attribute
+                input.setAttribute('data-base64', base64);
+            }
+        };
+
+        // --- DYNAMIC SCREENSHOT BOXES ---
+        window.addScreenshotBox = (existingBase64 = null) => {
+            const container = document.getElementById('screenshots-grid');
+            const id = Date.now() + Math.random(); // Unique ID
+            
+            const div = document.createElement('div');
+            div.className = 'sc-item';
+            div.innerHTML = `
+                <input type="file" id="file-${id}" hidden accept="image/*" onchange="handleImageUpload(this, 'box-${id}')" ${existingBase64 ? 'data-base64="'+existingBase64+'"' : ''}>
+                <label for="file-${id}" class="upload-box ${existingBase64 ? 'has-image' : ''}" id="box-${id}">
+                    ${existingBase64 ? `<img src="${existingBase64}" class="uploaded-preview">` : '<i class="fas fa-image"></i>'}
+                </label>
+                <button class="btn-remove-sc" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            container.appendChild(div);
+        };
+
+        // Initialize 4 empty boxes
+        function initScreenshotBoxes(screenshots = []) {
+            const container = document.getElementById('screenshots-grid');
+            container.innerHTML = "";
+            
+            let count = Math.max(4, screenshots.length);
+            for(let i=0; i<count; i++) {
+                addScreenshotBox(screenshots[i] || null);
+            }
+        }
+
+        // SAVE
+        window.saveGame = () => {
+            const name = document.getElementById('appName').value;
+            const logo = document.getElementById('logoBase64').value;
+            const desc = document.getElementById('appDesc').value;
+            const download = document.getElementById('appDownload').value;
+            
+            // Gather Screenshots
+            const scInputs = document.querySelectorAll('#screenshots-grid input[type="file"]');
+            const ssArray = [];
+            scInputs.forEach(inp => {
+                const b64 = inp.getAttribute('data-base64');
+                if(b64) ssArray.push(b64);
+            });
+
+            if(!name || !download || !logo) {
+                showToast("Name, Logo, and Download Link are required!", "error");
+                return;
+            }
+
+            const gameData = {
+                name: name,
+                logo: logo,
+                desc: desc,
+                download: download,
+                screenshots: ssArray,
+                timestamp: Date.now()
+            };
+
+            const dbRef = currentEditId ? ref(db, 'games/' + currentEditId) : ref(db, 'games');
+            const action = currentEditId ? update(dbRef, gameData) : push(dbRef, gameData);
+
+            action.then(() => {
+                showToast(currentEditId ? "Updated!" : "Published!", "success");
+                if(currentEditId) cancelEdit(); else resetForm();
+            }).catch(e => showToast(e.message, "error"));
+        };
+
+        // LIST
+        onValue(ref(db, 'games'), (snapshot) => {
+            const data = snapshot.val();
+            allGamesData = data || {};
+            const list = document.getElementById('apps-list');
+            list.innerHTML = "";
+            if (data) {
+                Object.entries(data).reverse().forEach(([key, game]) => {
+                    const item = document.createElement('div');
+                    item.className = 'app-item';
+                    item.setAttribute('data-name', game.name.toLowerCase());
+                    item.innerHTML = `
+                        <div class="app-info">
+                            <img src="${game.logo}" onerror="this.src='https://via.placeholder.com/50'">
+                            <div style="font-weight:bold;">${game.name}</div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-icon btn-edit" onclick="editGame('${key}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon btn-delete" onclick="deleteGame('${key}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            } else { list.innerHTML = "No apps found."; }
+        });
+
+        // EDIT
+        window.editGame = (key) => {
+            currentEditId = key;
+            const game = allGamesData[key];
+
+            document.getElementById('appName').value = game.name;
+            document.getElementById('appDesc').value = game.desc;
+            document.getElementById('appDownload').value = game.download;
+            
+            // Set Logo
+            document.getElementById('logoBase64').value = game.logo;
+            const logoBox = document.getElementById('logo-preview-box');
+            logoBox.innerHTML = `<img src="${game.logo}" class="uploaded-preview">`;
+            logoBox.classList.add('has-image');
+            document.getElementById('prev-img').src = game.logo;
+
+            // Set Screenshots
+            let ss = [];
+            if(game.screenshots && Array.isArray(game.screenshots)) ss = game.screenshots;
+            else {
+                // Old data compatibility
+                if(game.sc1) ss.push(game.sc1);
+                if(game.sc2) ss.push(game.sc2);
+                if(game.sc3) ss.push(game.sc3);
+                if(game.sc4) ss.push(game.sc4);
+            }
+            initScreenshotBoxes(ss);
+
+            document.getElementById('btn-publish').style.display = 'none';
+            document.getElementById('edit-controls').style.display = 'flex';
+            document.getElementById('form-title').innerText = "Edit: " + game.name;
+            document.querySelector('.main-content').scrollTop = 0;
+        };
+
+        window.cancelEdit = () => {
+            currentEditId = null;
+            resetForm();
+            document.getElementById('btn-publish').style.display = 'block';
+            document.getElementById('edit-controls').style.display = 'none';
+            document.getElementById('form-title').innerText = "Add New App";
+        };
+
+        window.deleteGame = (key) => { if(confirm("Delete?")) remove(ref(db, 'games/' + key)); };
+        
+        window.updatePreviewTitle = () => {
+            document.getElementById('prev-title').innerText = document.getElementById('appName').value || "App Name";
+        };
+
+        function resetForm() {
+            document.querySelectorAll('input[type="text"], textarea').forEach(i => i.value = '');
+            document.getElementById('logoBase64').value = '';
+            
+            // Reset Logo Box
+            const logoBox = document.getElementById('logo-preview-box');
+            logoBox.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><span>Click to Upload Logo</span>';
+            logoBox.classList.remove('has-image');
+            document.getElementById('prev-img').src = "https://via.placeholder.com/300?text=Logo";
+
+            initScreenshotBoxes([]); // Reset to 4 empty
+        }
+
+        window.filterApps = () => {
+            const q = document.getElementById('searchApps').value.toLowerCase();
+            document.querySelectorAll('.app-item').forEach(i => i.style.display = i.getAttribute('data-name').includes(q) ? 'flex' : 'none');
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById("toast");
+            t.innerText = msg; t.className = "show " + type;
+            setTimeout(() => t.className = "", 3000);
+        }
+    </script>
+</body>
+</html>
