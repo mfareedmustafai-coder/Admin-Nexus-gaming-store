@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Console | Admin</title>
+    <title>Nexus Console</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { margin: 0; background: #1f1f1f; color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
@@ -25,130 +25,146 @@
         .sidebar { width: 250px; background: #282828; padding: 20px; border-right: 1px solid #333; display: flex; flex-direction: column; }
         .main { flex: 1; padding: 30px; overflow-y: auto; }
         
+        /* MENUS */
+        .menu-item { padding: 15px; cursor: pointer; color: #aaa; border-radius: 5px; margin-bottom: 5px; font-weight: 500; display:flex; gap:10px; align-items:center; }
+        .menu-item:hover, .menu-item.active { background: #383838; color: white; }
+        .badge { background: #ff4757; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: auto; }
+
         /* FORM INPUTS */
         input, textarea, select { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
         label { display: block; color: #aaa; margin-bottom: 5px; font-size: 14px; }
         
         .btn { background: #00A173; color: black; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn:hover { background: #00c48c; }
+        .btn-small { width: auto; padding: 6px 15px; font-size: 12px; border-radius: 5px; margin-left: 5px; }
         
+        /* FILE UPLOAD */
         .file-box { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
-        .preview-img { height: 60px; margin-top: 10px; display: none; object-fit: contain; }
+        .preview-img { height: 60px; margin-top: 10px; display: none; object-fit: contain; margin-left: auto; margin-right: auto; }
         
+        /* LAYOUT */
         .two-col { display: flex; gap: 15px; }
         
-        /* LIST STYLES */
+        /* CARDS */
         .game-row { display: flex; align-items: center; background: #282828; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; }
-        .game-row img { width: 40px; height: 40px; border-radius: 8px; margin-right: 15px; }
-        .btn-small { width: auto; padding: 5px 15px; font-size: 12px; border-radius: 6px; }
+        .game-row img { width: 50px; height: 50px; border-radius: 10px; margin-right: 15px; object-fit:cover; }
+        
+        /* BUTTON COLORS */
+        .bg-red { background: #ff4757; color: white; }
+        .bg-blue { background: #3498db; color: white; }
+        .bg-yellow { background: #ffa502; color: black; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN SCREEN -->
+    <!-- 1. AUTHENTICATION (Firebase) -->
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#00A173; margin-top:0;">Admin Access</h2>
+            <h2 style="color:#00A173; margin-top:0">Nexus Admin</h2>
             <input type="email" id="admin-email" placeholder="Admin Email">
             <input type="password" id="admin-pass" placeholder="Password">
             <button class="btn" onclick="window.adminLogin()">Login</button>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- 2. DASHBOARD -->
     <div id="dashboard">
         <div class="sidebar">
-            <h2 style="color:#00A173">Nexus Console</h2>
-            <p>Admin Panel</p>
+            <h2 style="color:#00A173">Console</h2>
+            
+            <div class="menu-item active" onclick="window.showView('publish')">
+                <i class="fas fa-plus-circle"></i> Publish / Edit
+            </div>
+            
+            <div class="menu-item" onclick="window.showView('requests')">
+                <i class="fas fa-clock"></i> Requests <span class="badge" id="req-count">0</span>
+            </div>
+            
+            <div class="menu-item" onclick="window.showView('live')">
+                <i class="fas fa-check-circle"></i> Live Apps
+            </div>
+
             <div style="margin-top:auto">
-                <button class="btn" style="background:#ff4757; color:white;" onclick="window.adminLogout()">Logout</button>
+                <button class="btn bg-red" onclick="window.adminLogout()">Logout</button>
             </div>
         </div>
 
         <div class="main">
-            <h1>Create New Release</h1>
             
-            <div style="background: #282828; padding: 20px; border-radius: 10px; margin-bottom:30px;">
-                <label>App Name</label>
-                <input type="text" id="name" placeholder="e.g. Minecraft">
+            <!-- VIEW: PUBLISH / EDIT FORM -->
+            <div id="view-publish">
+                <h1 id="form-title">Publish New App</h1>
+                <div style="background: #282828; padding: 25px; border-radius: 12px;">
+                    
+                    <label>App Name</label>
+                    <input type="text" id="name" placeholder="Name">
 
-                <div class="two-col">
-                    <div style="flex:1">
-                        <label>Type</label>
-                        <select id="appType"><option value="Game">Game</option><option value="App">App</option></select>
+                    <div class="two-col">
+                        <div style="flex:1"><label>Type</label><select id="appType"><option>Game</option><option>App</option></select></div>
+                        <div style="flex:1"><label>Category</label><select id="appCat"><option>Action</option><option>Racing</option><option>RPG</option><option>Tools</option><option>Social</option></select></div>
                     </div>
-                    <div style="flex:1">
-                        <label>Category</label>
-                        <select id="appCategory">
-                            <option value="Action">Action</option><option value="Racing">Racing</option>
-                            <option value="RPG">RPG</option><option value="Simulation">Simulation</option>
-                            <option value="Social">Social</option><option value="Tools">Tools</option>
-                        </select>
+
+                    <div class="two-col">
+                        <div style="flex:1"><label>Size</label><input type="text" id="appSize" placeholder="1.2 GB"></div>
+                        <div style="flex:1"><label>Age</label><input type="text" id="appAge" placeholder="12+"></div>
                     </div>
+
+                    <div class="two-col">
+                        <div style="flex:1">
+                            <label>Pricing</label>
+                            <select id="priceType" onchange="window.togglePrice()">
+                                <option value="Free">Free</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </div>
+                        <div style="flex:1">
+                            <label>Price</label>
+                            <input type="text" id="appPrice" placeholder="Rs. 500" disabled style="opacity:0.5">
+                        </div>
+                    </div>
+
+                    <label>Icon</label>
+                    <div class="file-box" onclick="document.getElementById('iconFile').click()">
+                        Click to Upload Icon
+                        <img id="iconPrev" class="preview-img">
+                    </div>
+                    <input type="file" id="iconFile" hidden accept="image/*" onchange="window.handleIcon(this)">
+                    <input type="hidden" id="iconBase64">
+
+                    <label>Download Link</label>
+                    <input type="text" id="link" placeholder="URL">
+
+                    <label>Description</label>
+                    <textarea id="desc" rows="3"></textarea>
+
+                    <label>Screenshots</label>
+                    <div id="sc-container"></div>
+                    <button class="btn" style="background:#444; color:white; margin-bottom:15px;" onclick="window.addScField()">+ Screenshot</button>
+
+                    <button class="btn" id="btn-submit" onclick="window.publishApp()">PUBLISH</button>
+                    <button class="btn bg-red" id="btn-cancel" style="display:none; margin-top:10px;" onclick="window.resetForm()">CANCEL EDIT</button>
                 </div>
-
-                <!-- NEW: RATING + PRICING ROW -->
-                <div class="two-col">
-                    <div style="flex:1">
-                        <label>Pricing</label>
-                        <select id="priceType" onchange="window.togglePriceInput()">
-                            <option value="Free">Free</option>
-                            <option value="Paid">Paid</option>
-                        </select>
-                    </div>
-                    <div style="flex:1">
-                        <label>Price (if Paid)</label>
-                        <input type="text" id="appPrice" placeholder="e.g. $4.99" disabled style="opacity:0.5;">
-                    </div>
-                </div>
-
-                <!-- STATS ROW -->
-                <div class="two-col">
-                    <div style="flex:1">
-                        <label>Size</label>
-                        <input type="text" id="appSize" placeholder="e.g. 1.2 GB">
-                    </div>
-                    <div style="flex:1">
-                        <label>Age Rating</label>
-                        <input type="text" id="appAge" placeholder="e.g. 12+">
-                    </div>
-                    <div style="flex:1">
-                        <label>Star Rating (1-5)</label>
-                        <input type="text" id="appRating" placeholder="e.g. 4.5">
-                    </div>
-                </div>
-
-                <label>App Icon</label>
-                <div class="file-box" onclick="document.getElementById('iconFile').click()">
-                    Click to Upload Icon
-                    <img id="iconPrev" class="preview-img">
-                </div>
-                <input type="file" id="iconFile" hidden accept="image/*" onchange="window.handleIcon(this)">
-                <input type="hidden" id="iconBase64">
-
-                <label>Download Link</label>
-                <input type="text" id="link" placeholder="Direct Download URL">
-
-                <label>Description</label>
-                <textarea id="desc" rows="3"></textarea>
-
-                <label>Screenshots</label>
-                <div id="sc-container"></div>
-                <button class="btn" style="background:#444; color:white; margin-bottom:15px;" onclick="window.addScField()">+ Screenshot</button>
-                
-                <button class="btn" id="publishBtn" onclick="window.publish()">PUBLISH APP</button>
-                <button class="btn" id="cancelBtn" style="background:#333; margin-top:10px; display:none;" onclick="window.resetForm()">CANCEL EDIT</button>
             </div>
 
-            <h2>Published Apps</h2>
-            <div id="app-list">Loading...</div>
+            <!-- VIEW: REQUESTS -->
+            <div id="view-requests" style="display:none;">
+                <h1>Pending Requests</h1>
+                <div id="list-requests">Loading...</div>
+            </div>
+
+            <!-- VIEW: LIVE APPS -->
+            <div id="view-live" style="display:none;">
+                <h1>Published Apps</h1>
+                <div id="list-live">Loading...</div>
+            </div>
+
         </div>
     </div>
 
+    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { getDatabase, ref, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
         // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
@@ -165,10 +181,21 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let currentEditId = null;
-        let allApps = {};
+        let currentEditId = null; // Track ID for editing
+        let liveAppsData = {}; // Store data
 
-        // AUTH
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                document.getElementById('login-screen').style.display='none';
+                document.getElementById('dashboard').style.display='flex';
+                loadData();
+            } else {
+                document.getElementById('login-screen').style.display='flex';
+                document.getElementById('dashboard').style.display='none';
+            }
+        });
+
         window.adminLogin = () => {
             const e = document.getElementById('admin-email').value;
             const p = document.getElementById('admin-pass').value;
@@ -176,129 +203,174 @@
         };
         window.adminLogout = () => signOut(auth);
 
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('login-screen').style.display='none';
-                document.getElementById('dashboard').style.display='flex';
-                loadApps();
-            } else {
-                document.getElementById('login-screen').style.display='flex';
-                document.getElementById('dashboard').style.display='none';
-            }
-        });
-
-        // PRICING TOGGLE
-        window.togglePriceInput = () => {
-            const type = document.getElementById('priceType').value;
-            const field = document.getElementById('appPrice');
-            if(type === 'Paid') {
-                field.disabled = false;
-                field.style.opacity = "1";
-            } else {
-                field.disabled = true;
-                field.style.opacity = "0.5";
-                field.value = "";
-            }
+        // --- NAVIGATION ---
+        window.showView = (id) => {
+            ['publish','requests','live'].forEach(v => document.getElementById('view-'+v).style.display='none');
+            document.getElementById('view-'+id).style.display='block';
+            
+            // Highlight Menu
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         };
 
-        // IMAGE HANDLING
-        const compress = (f) => new Promise(r => { const rd=new FileReader(); rd.readAsDataURL(f); rd.onload=e=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{ const c=document.createElement('canvas'),s=500/i.width; c.width=500; c.height=i.height*s; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.8)); } } });
+        // --- FORM LOGIC ---
+        const compress = (f) => new Promise(r => { const rd=new FileReader(); rd.readAsDataURL(f); rd.onload=e=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{ const c=document.createElement('canvas'),s=500/i.width; c.width=500; c.height=i.height*s; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.7))}}});
 
-        window.handleIcon = async (inp) => { if(inp.files[0]) { const b64 = await compress(inp.files[0]); document.getElementById('iconBase64').value = b64; document.getElementById('iconPrev').src = b64; document.getElementById('iconPrev').style.display='block'; } };
-        window.addScField = () => { const d=document.createElement('div'); d.innerHTML=`<input type="file" class="sc-file" accept="image/*" style="width:80%" onchange="window.handleSc(this)">`; document.getElementById('sc-container').appendChild(d); };
-        window.handleSc = async (inp) => { if(inp.files[0]) { const b64 = await compress(inp.files[0]); inp.setAttribute('data-b64', b64); inp.style.border="1px solid #00A173"; } };
+        window.handleIcon = async (inp) => { if(inp.files[0]) { const b=await compress(inp.files[0]); document.getElementById('iconBase64').value=b; document.getElementById('iconPrev').src=b; document.getElementById('iconPrev').style.display='block'; } };
+        window.togglePrice = () => { const t=document.getElementById('priceType').value; const i=document.getElementById('appPrice'); if(t==='Paid'){i.disabled=false;i.style.opacity=1}else{i.disabled=true;i.style.opacity=0.5;i.value=''} };
+        window.addScField = () => { const d=document.createElement('div'); d.innerHTML=`<input type="file" class="sc-file" accept="image/*" onchange="window.handleSc(this)" style="margin-bottom:5px">`; document.getElementById('sc-container').appendChild(d); };
+        window.handleSc = async (i) => { if(i.files[0]) { const b=await compress(i.files[0]); i.setAttribute('data-b64', b); i.style.border="1px solid #00d4ff"; } };
 
-        // PUBLISH / UPDATE
-        window.publish = () => {
+        // --- PUBLISH / UPDATE ---
+        window.publishApp = () => {
             const data = {
                 name: document.getElementById('name').value,
+                type: document.getElementById('appType').value,
+                category: document.getElementById('appCat').value,
+                size: document.getElementById('appSize').value,
+                age: document.getElementById('appAge').value,
+                priceType: document.getElementById('priceType').value,
+                price: document.getElementById('appPrice').value || "Free",
                 logo: document.getElementById('iconBase64').value,
                 download: document.getElementById('link').value,
                 desc: document.getElementById('desc').value,
-                type: document.getElementById('appType').value,
-                category: document.getElementById('appCategory').value,
-                priceType: document.getElementById('priceType').value,
-                price: document.getElementById('appPrice').value || "Free",
-                size: document.getElementById('appSize').value || "N/A",
-                age: document.getElementById('appAge').value || "3+",
-                rating: document.getElementById('appRating').value || "4.5", // Added Rating
                 timestamp: Date.now()
             };
 
             const screenshots = [];
             document.querySelectorAll('.sc-file').forEach(i => { const v=i.getAttribute('data-b64'); if(v) screenshots.push(v); });
-            
             if(screenshots.length > 0) data.screenshots = screenshots;
-            else if(currentEditId && allApps[currentEditId].screenshots) data.screenshots = allApps[currentEditId].screenshots;
+            // If editing and no new screenshots, keep old ones logic is handled by keeping data.screenshots undefined if empty, but we need to merge.
+            // Simplified: If editing, we need to merge old screenshots if new not provided. For now we assume re-upload or add new.
+            if(currentEditId && screenshots.length === 0 && liveAppsData[currentEditId].screenshots) {
+                data.screenshots = liveAppsData[currentEditId].screenshots;
+            }
 
-            if(!data.name || !data.download) return alert("Missing Fields");
+            if(!data.name || !data.download) return alert("Name & Link required");
 
             if(currentEditId) {
+                // UPDATE EXISTING
                 update(ref(db, 'games/'+currentEditId), data).then(() => { alert("Updated!"); window.resetForm(); });
             } else {
+                // CREATE NEW
                 data.downloadCount = 0;
+                data.developer = "Admin"; 
                 push(ref(db, 'games'), data).then(() => { alert("Published!"); window.resetForm(); });
             }
         };
 
-        // EDIT & DELETE
+        // --- EDIT LOGIC ---
         window.editApp = (id) => {
             currentEditId = id;
-            const d = allApps[id];
+            const app = liveAppsData[id];
             
-            document.getElementById('name').value = d.name;
-            document.getElementById('link').value = d.download;
-            document.getElementById('desc').value = d.desc;
-            document.getElementById('appType').value = d.type || "Game";
-            document.getElementById('appCategory').value = d.category || "Action";
-            document.getElementById('priceType').value = d.priceType || "Free";
-            document.getElementById('appPrice').value = d.price || "";
-            document.getElementById('appSize').value = d.size || "";
-            document.getElementById('appAge').value = d.age || "";
-            document.getElementById('appRating').value = d.rating || ""; // Set Rating
-            
-            document.getElementById('iconBase64').value = d.logo;
-            document.getElementById('iconPrev').src = d.logo;
-            document.getElementById('iconPrev').style.display = 'block';
-            window.togglePriceInput();
+            // Switch to Publish Tab
+            window.showView('publish');
+            document.querySelectorAll('.menu-item')[0].classList.add('active'); // Highlight 1st tab
 
-            document.getElementById('publishBtn').innerText = "UPDATE APP";
-            document.getElementById('cancelBtn').style.display = "block";
-            document.querySelector('.main').scrollTop = 0;
+            // Fill Form
+            document.getElementById('form-title').innerText = "Edit App: " + app.name;
+            document.getElementById('btn-submit').innerText = "UPDATE APP";
+            document.getElementById('btn-cancel').style.display = "block";
+
+            document.getElementById('name').value = app.name;
+            document.getElementById('appType').value = app.type || 'Game';
+            document.getElementById('appCat').value = app.category || 'Action';
+            document.getElementById('appSize').value = app.size || '';
+            document.getElementById('appAge').value = app.age || '';
+            document.getElementById('priceType').value = app.priceType || 'Free';
+            document.getElementById('appPrice').value = app.price || '';
+            window.togglePrice();
+            
+            document.getElementById('link').value = app.download;
+            document.getElementById('desc').value = app.desc;
+            
+            document.getElementById('iconBase64').value = app.logo;
+            document.getElementById('iconPrev').src = app.logo;
+            document.getElementById('iconPrev').style.display = 'block';
         };
 
         window.resetForm = () => {
             currentEditId = null;
-            document.querySelectorAll('input, textarea').forEach(i => i.value="");
+            document.querySelectorAll('input, textarea').forEach(i=>i.value="");
             document.getElementById('iconPrev').style.display='none';
-            document.getElementById('publishBtn').innerText = "PUBLISH APP";
-            document.getElementById('cancelBtn').style.display = "none";
+            document.getElementById('sc-container').innerHTML="";
+            document.getElementById('form-title').innerText = "Publish New App";
+            document.getElementById('btn-submit').innerText = "PUBLISH";
+            document.getElementById('btn-cancel').style.display = "none";
         };
 
-        window.deleteApp = (id) => { if(confirm("Delete?")) remove(ref(db, 'games/'+id)); };
-
-        function loadApps() {
+        // --- DATA HANDLING ---
+        function loadData() {
+            // Live Apps
             onValue(ref(db, 'games'), snap => {
                 const d = snap.val();
-                const list = document.getElementById('app-list');
+                liveAppsData = d || {};
+                const list = document.getElementById('list-live');
                 list.innerHTML = "";
-                allApps = d || {};
                 if(d) {
-                    Object.entries(d).forEach(([k, v]) => {
+                    Object.entries(d).reverse().forEach(([k, v]) => {
                         list.innerHTML += `
                             <div class="game-row">
                                 <img src="${v.logo}">
-                                <div style="flex:1"><b>${v.name}</b><br><small>${v.priceType} | ${v.rating}★</small></div>
-                                <div>
-                                    <button class="btn btn-small" style="background:#ffa502;color:black" onclick="window.editApp('${k}')">Edit</button>
-                                    <button class="btn btn-small" style="background:#ff4757" onclick="window.deleteApp('${k}')">Del</button>
-                                </div>
+                                <div style="flex:1"><b>${v.name}</b><br><small>${v.category} | ${v.priceType}</small></div>
+                                <button class="btn btn-small bg-yellow" onclick="window.editApp('${k}')">Edit</button>
+                                <button class="btn btn-small bg-red" onclick="window.deleteLive('${k}')">Del</button>
                             </div>
                         `;
                     });
-                }
+                } else { list.innerHTML = "<p>No apps live.</p>"; }
+            });
+
+            // Pending Apps
+            onValue(ref(db, 'pending_apps'), snap => {
+                const d = snap.val();
+                const list = document.getElementById('list-requests');
+                const count = document.getElementById('req-count');
+                list.innerHTML = "";
+                let c = 0;
+                
+                if(d) {
+                    Object.entries(d).forEach(([k, v]) => {
+                        c++;
+                        list.innerHTML += `
+                            <div class="game-row">
+                                <img src="${v.logo}">
+                                <div style="flex:1">
+                                    <b>${v.name}</b><br>
+                                    <small style="color:#aaa">Dev: ${v.developer}</small><br>
+                                    <a href="${v.download}" target="_blank" style="color:#3498db;font-size:12px;">Check Link</a>
+                                </div>
+                                <button class="btn btn-small bg-blue" onclick="window.approveReq('${k}')">Approve</button>
+                                <button class="btn btn-small bg-red" onclick="window.rejectReq('${k}')">Reject</button>
+                            </div>
+                        `;
+                    });
+                } else { list.innerHTML = "<p>No pending requests.</p>"; }
+                count.innerText = c;
             });
         }
+
+        // --- APPROVE / REJECT / DELETE ---
+        window.approveReq = (id) => {
+            get(ref(db, 'pending_apps/'+id)).then(s => {
+                if(s.exists()) {
+                    const data = s.val();
+                    data.status = "Live";
+                    data.downloadCount = 0;
+                    push(ref(db, 'games'), data).then(() => {
+                        remove(ref(db, 'pending_apps/'+id));
+                        alert("Approved!");
+                    });
+                }
+            });
+        };
+        // Need to import 'get' first
+        import { get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        window.rejectReq = (id) => { if(confirm("Reject?")) remove(ref(db, 'pending_apps/'+id)); };
+        window.deleteLive = (id) => { if(confirm("Delete Live App?")) remove(ref(db, 'games/'+id)); };
+
     </script>
 </body>
 </html>
