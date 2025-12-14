@@ -37,33 +37,41 @@
         .btn { background: #00A173; color: black; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
         .btn-small { width: auto; padding: 6px 15px; font-size: 12px; border-radius: 5px; margin-left: 5px; }
         
-        /* CARDS */
+        .file-box { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
+        .preview-img { height: 60px; margin-top: 10px; display: none; object-fit: contain; margin-left: auto; margin-right: auto; }
+        
+        .two-col { display: flex; gap: 15px; }
+        
+        /* LIST CARDS */
         .game-row { display: flex; align-items: center; background: #282828; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; }
         .game-row img { width: 50px; height: 50px; border-radius: 10px; margin-right: 15px; object-fit:cover; }
+
+        /* REQUEST CARD */
+        .req-card { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #333; }
+        .req-img { width: 50px; height: 50px; border-radius: 10px; margin-right: 15px; object-fit: cover; }
+        .req-info { flex: 1; }
+        .req-actions { display: flex; gap: 10px; }
         
+        /* COLORS */
+        .bg-red { background: #ff4757; color: white; }
+        .bg-blue { background: #3498db; color: white; }
+        .bg-yellow { background: #ffa502; color: black; }
+
         /* MODAL */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal-content { background: #222; padding: 30px; border-radius: 15px; width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid #444; }
         .info-row { margin-bottom: 10px; font-size: 14px; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .info-label { font-weight: bold; color: #00d4ff; display: block; margin-bottom: 2px; }
         .download-link-text { font-size: 11px; color: #aaa; word-break: break-all; font-family: monospace; background: #111; padding: 5px; border-radius: 4px; display: block; margin-top: 5px; }
-
-        .two-col { display: flex; gap: 15px; }
-        .file-box { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
-        .preview-img { height: 60px; margin-top: 10px; display: none; object-fit: contain; margin-left: auto; margin-right: auto; }
-        
-        /* BUTTON COLORS */
-        .bg-red { background: #ff4757; color: white; }
-        .bg-blue { background: #3498db; color: white; }
-        .bg-yellow { background: #ffa502; color: black; }
     </style>
 </head>
 <body>
 
-    <!-- 1. AUTHENTICATION -->
+    <!-- 1. AUTHENTICATION (Firebase) -->
     <div id="login-screen">
         <div class="login-box">
             <h2 style="color:#00A173; margin-top:0">Nexus Admin</h2>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Secure Access</p>
             <input type="email" id="admin-email" placeholder="Admin Email">
             <input type="password" id="admin-pass" placeholder="Password">
             <button class="btn" onclick="window.adminLogin()">Login</button>
@@ -78,12 +86,15 @@
             <div class="menu-item active" onclick="window.showView('publish')">
                 <i class="fas fa-plus-circle"></i> Publish / Edit
             </div>
+            
             <div class="menu-item" onclick="window.showView('requests')">
                 <i class="fas fa-clock"></i> Requests <span class="badge" id="req-count">0</span>
             </div>
+            
             <div class="menu-item" onclick="window.showView('live')">
                 <i class="fas fa-check-circle"></i> Live Apps
             </div>
+
             <div style="margin-top:auto">
                 <button class="btn bg-red" onclick="window.adminLogout()">Logout</button>
             </div>
@@ -91,32 +102,59 @@
 
         <div class="main">
             
-            <!-- VIEW: PUBLISH / EDIT -->
+            <!-- VIEW: PUBLISH / EDIT FORM -->
             <div id="view-publish">
                 <h1 id="form-title">Publish New App</h1>
                 <div style="background: #282828; padding: 25px; border-radius: 12px;">
-                    <label>App Name</label><input type="text" id="name" placeholder="Name">
+                    
+                    <label>App Name</label>
+                    <input type="text" id="name" placeholder="Name">
+
                     <div class="two-col">
                         <div style="flex:1"><label>Type</label><select id="appType"><option>Game</option><option>App</option></select></div>
                         <div style="flex:1"><label>Category</label><select id="appCat"><option>Action</option><option>Racing</option><option>RPG</option><option>Tools</option><option>Social</option></select></div>
                     </div>
+
                     <div class="two-col">
                         <div style="flex:1"><label>Size</label><input type="text" id="appSize" placeholder="1.2 GB"></div>
                         <div style="flex:1"><label>Age</label><input type="text" id="appAge" placeholder="12+"></div>
                     </div>
+
                     <div class="two-col">
-                        <div style="flex:1"><label>Pricing</label><select id="priceType" onchange="window.togglePrice()"><option value="Free">Free</option><option value="Paid">Paid</option></select></div>
-                        <div style="flex:1"><label>Price</label><input type="text" id="appPrice" placeholder="Rs. 500" disabled style="opacity:0.5"></div>
+                        <div style="flex:1">
+                            <label>Pricing</label>
+                            <select id="priceType" onchange="window.togglePrice()">
+                                <option value="Free">Free</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </div>
+                        <div style="flex:1">
+                            <label>Price</label>
+                            <input type="text" id="appPrice" placeholder="Rs. 500" disabled style="opacity:0.5">
+                        </div>
                     </div>
-                    <input type="hidden" id="appDeveloper">
+
+                    <!-- Hidden field to keep original developer name when editing -->
+                    <input type="hidden" id="originalDeveloper">
+
                     <label>Icon</label>
-                    <div class="file-box" onclick="document.getElementById('iconFile').click()">Click to Upload Icon<img id="iconPrev" class="preview-img"></div>
+                    <div class="file-box" onclick="document.getElementById('iconFile').click()">
+                        Click to Upload Icon
+                        <img id="iconPrev" class="preview-img">
+                    </div>
                     <input type="file" id="iconFile" hidden accept="image/*" onchange="window.handleIcon(this)">
                     <input type="hidden" id="iconBase64">
-                    <label>Download Link</label><input type="text" id="link" placeholder="URL">
-                    <label>Description</label><textarea id="desc" rows="3"></textarea>
-                    <label>Screenshots</label><div id="sc-container"></div>
+
+                    <label>Download Link</label>
+                    <input type="text" id="link" placeholder="URL">
+
+                    <label>Description</label>
+                    <textarea id="desc" rows="3"></textarea>
+
+                    <label>Screenshots</label>
+                    <div id="sc-container"></div>
                     <button class="btn" style="background:#444; color:white; margin-bottom:15px;" onclick="window.addScField()">+ Screenshot</button>
+
                     <button class="btn" id="btn-submit" onclick="window.publishApp()">PUBLISH</button>
                     <button class="btn bg-red" id="btn-cancel" style="display:none; margin-top:10px;" onclick="window.resetForm()">CANCEL EDIT</button>
                 </div>
@@ -133,6 +171,7 @@
                 <h1>Published Apps</h1>
                 <div id="list-live">Loading...</div>
             </div>
+
         </div>
     </div>
 
@@ -140,35 +179,24 @@
     <div id="review-modal" class="modal">
         <div class="modal-content">
             <h2 id="m-title" style="border-bottom:1px solid #333; padding-bottom:10px;">App Name</h2>
+            <div style="text-align:center; margin-bottom:20px;"><img id="m-icon" style="width:80px; height:80px; border-radius:15px; object-fit:cover;"></div>
             
-            <div style="display:flex; gap:15px; margin-bottom:20px;">
-                <img id="m-icon" style="width:80px; height:80px; border-radius:15px; object-fit:cover;">
-                <div>
-                    <div class="info-label">Developer</div>
-                    <div id="m-dev" style="color:white; font-size:16px;"></div>
-                </div>
-            </div>
-
-            <div class="info-row"><span class="info-label">Category / Type</span> <span id="m-cat"></span></div>
-            <div class="info-row"><span class="info-label">Price</span> <span id="m-price"></span></div>
+            <div class="info-row"><span class="info-label">Request Type:</span> <span id="m-req-type" style="color:orange; font-weight:bold;"></span></div>
+            <div class="info-row"><span class="info-label">Developer:</span> <span id="m-dev"></span></div>
+            <div class="info-row"><span class="info-label">Category:</span> <span id="m-cat"></span></div>
+            <div class="info-row"><span class="info-label">Description:</span> <span id="m-desc"></span></div>
             
-            <!-- DOWNLOAD / TEST SECTION -->
-            <div style="background:#2d2d2d; padding:15px; border-radius:8px; margin:15px 0; border:1px solid #444;">
-                <span class="info-label"><i class="fas fa-link"></i> Download Link Submitted:</span>
-                <a id="m-link-text" href="#" target="_blank" class="download-link-text">https://...</a>
-                
-                <button class="btn" style="background:#00d4ff; color:black; margin-top:10px;" onclick="window.openTestDownload()">
-                    <i class="fas fa-download"></i> Download & Check App
-                </button>
+            <div style="margin:20px 0; border-top:1px solid #444; padding-top:10px;">
+                <span class="info-label">Download Link:</span>
+                <a id="m-link-text" href="#" target="_blank" class="download-link-text">...</a>
+                <button class="btn" style="background:#333; color:white; width:100%; margin-top:10px;" onclick="window.openTestDownload()">Download & Check App</button>
             </div>
-
-            <div class="info-row"><span class="info-label">Description</span> <span id="m-desc"></span></div>
 
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn bg-blue" onclick="window.approveApp()">APPROVE</button>
-                <button class="btn bg-red" onclick="window.rejectApp()">REJECT</button>
+                <button class="btn bg-blue" style="flex:1" onclick="window.approveApp()">APPROVE</button>
+                <button class="btn bg-red" style="flex:1" onclick="window.rejectApp()">REJECT</button>
             </div>
-            <button onclick="document.getElementById('review-modal').style.display='none'" style="background:none; border:none; color:#aaa; width:100%; cursor:pointer; margin-top:10px;">Close</button>
+            <button onclick="document.getElementById('review-modal').style.display='none'" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;">Close</button>
         </div>
     </div>
 
@@ -177,6 +205,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
         import { getDatabase, ref, push, update, remove, onValue, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCn1FBaxDwbvC28VWXAcq557uCidl-JHy0",
             authDomain: "app-store-6b5d4.firebaseapp.com",
@@ -191,20 +220,32 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let currentEditId = null; 
+        let currentEditId = null; // Stores ID when editing LIVE app
         let liveAppsData = {};
         let pendingAppsData = {};
-        let currentReviewId = null;
+        let currentReviewId = null; // Stores ID when reviewing PENDING app
+        let currentReviewData = null;
 
-        // AUTH
-        onAuthStateChanged(auth, u => {
-            if(u) { document.getElementById('login-screen').style.display='none'; document.getElementById('dashboard').style.display='flex'; loadData(); }
-            else { document.getElementById('login-screen').style.display='flex'; document.getElementById('dashboard').style.display='none'; }
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                document.getElementById('login-screen').style.display='none';
+                document.getElementById('dashboard').style.display='flex';
+                loadData();
+            } else {
+                document.getElementById('login-screen').style.display='flex';
+                document.getElementById('dashboard').style.display='none';
+            }
         });
-        window.adminLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e=>alert(e.message));
+
+        window.adminLogin = () => {
+            const e = document.getElementById('admin-email').value;
+            const p = document.getElementById('admin-pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+        };
         window.adminLogout = () => signOut(auth);
 
-        // NAVIGATION
+        // --- NAVIGATION ---
         window.showView = (id) => {
             ['publish','requests','live'].forEach(v => document.getElementById('view-'+v).style.display='none');
             document.getElementById('view-'+id).style.display='block';
@@ -212,15 +253,18 @@
             event.currentTarget.classList.add('active');
         };
 
-        // FORM & COMPRESS
+        // --- FORM LOGIC ---
         const compress = (f) => new Promise(r => { const rd=new FileReader(); rd.readAsDataURL(f); rd.onload=e=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{ const c=document.createElement('canvas'),s=500/i.width; c.width=500; c.height=i.height*s; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.7))}}});
+
         window.handleIcon = async (i) => { if(i.files[0]){const b=await compress(i.files[0]);document.getElementById('iconBase64').value=b;document.getElementById('iconPrev').src=b;document.getElementById('iconPrev').style.display='block';}};
         window.togglePrice = () => { const t=document.getElementById('priceType').value; const i=document.getElementById('appPrice'); if(t==='Paid'){i.disabled=false;i.style.opacity=1}else{i.disabled=true;i.style.opacity=0.5;i.value=''} };
         window.addScField = () => { const d=document.createElement('div'); d.innerHTML=`<input type="file" class="sc-file" accept="image/*" onchange="window.handleSc(this)" style="margin-bottom:5px">`; document.getElementById('sc-container').appendChild(d); };
         window.handleSc = async (i) => { if(i.files[0]){const b=await compress(i.files[0]);i.setAttribute('data-b64', b); i.style.border="1px solid #00d4ff";}};
 
-        // PUBLISH
+        // --- PUBLISH / UPDATE LOGIC ---
         window.publishApp = () => {
+            const originalDev = document.getElementById('originalDeveloper').value;
+
             const data = {
                 name: document.getElementById('name').value,
                 type: document.getElementById('appType').value,
@@ -232,14 +276,17 @@
                 logo: document.getElementById('iconBase64').value,
                 download: document.getElementById('link').value,
                 desc: document.getElementById('desc').value,
-                developer: document.getElementById('appDeveloper').value || "Nexus Official",
-                timestamp: Date.now()
+                // If editing existing, keep orig dev. If new, set as Admin.
+                developer: originalDev || "Nexus Official",
+                timestamp: Date.now(),
+                status: "Live"
             };
 
             const screenshots = [];
             document.querySelectorAll('.sc-file').forEach(i => { const v=i.getAttribute('data-b64'); if(v) screenshots.push(v); });
             if(screenshots.length > 0) data.screenshots = screenshots;
             
+            // If editing and no new screenshots, retain old ones
             if(currentEditId && screenshots.length === 0 && liveAppsData[currentEditId].screenshots) {
                 data.screenshots = liveAppsData[currentEditId].screenshots;
             }
@@ -247,22 +294,28 @@
             if(!data.name || !data.download) return alert("Missing fields");
 
             if(currentEditId) {
-                update(ref(db, 'games/'+currentEditId), data).then(() => { alert("Updated!"); window.resetForm(); });
+                // UPDATE EXISTING LIVE APP
+                update(ref(db, 'games/'+currentEditId), data).then(() => { alert("Updated Successfully!"); window.resetForm(); });
             } else {
+                // PUBLISH NEW APP DIRECTLY
                 data.downloadCount = 0;
-                push(ref(db, 'games'), data).then(() => { alert("Published!"); window.resetForm(); });
+                push(ref(db, 'games'), data).then(() => { alert("Published Live!"); window.resetForm(); });
             }
         };
 
-        window.editApp = (id) => {
+        // --- EDIT LOGIC (FOR LIVE APPS) ---
+        window.editLiveApp = (id) => {
             currentEditId = id;
             const app = liveAppsData[id];
+            
+            // Switch to Publish View
             window.showView('publish');
-            document.querySelectorAll('.menu-item')[0].classList.add('active');
+            
+            // Fill Form
             document.getElementById('form-title').innerText = "Edit: " + app.name;
             document.getElementById('btn-submit').innerText = "UPDATE APP";
             document.getElementById('btn-cancel').style.display = "block";
-            
+
             document.getElementById('name').value = app.name;
             document.getElementById('appType').value = app.type||'Game';
             document.getElementById('appCat').value = app.category||'Action';
@@ -272,7 +325,9 @@
             document.getElementById('appPrice').value = app.price||'';
             window.togglePrice();
             
-            document.getElementById('appDeveloper').value = app.developer;
+            // Store original developer name to preserve it
+            document.getElementById('originalDeveloper').value = app.developer || "Nexus Official";
+
             document.getElementById('link').value = app.download;
             document.getElementById('desc').value = app.desc;
             document.getElementById('iconBase64').value = app.logo;
@@ -288,19 +343,29 @@
             document.getElementById('form-title').innerText = "Publish New App";
             document.getElementById('btn-submit').innerText = "PUBLISH";
             document.getElementById('btn-cancel').style.display = "none";
-            document.getElementById('appDeveloper').value = ""; 
+            document.getElementById('originalDeveloper').value = "";
         };
 
         // --- DATA LOAD ---
         function loadData() {
+            // Live Apps
             onValue(ref(db, 'games'), s => {
                 liveAppsData = s.val() || {};
                 const list = document.getElementById('list-live'); list.innerHTML="";
                 if(liveAppsData) Object.entries(liveAppsData).reverse().forEach(([k, v]) => {
-                    list.innerHTML += `<div class="game-row"><img src="${v.logo}"><div style="flex:1"><b>${v.name}</b><br><small style="color:#00A173">${v.developer || 'Nexus Official'}</small></div><button class="btn btn-small bg-yellow" onclick="window.editApp('${k}')">Edit</button><button class="btn btn-small bg-red" onclick="window.deleteLive('${k}')">Del</button></div>`;
+                    list.innerHTML += `
+                        <div class="game-row">
+                            <img src="${v.logo}">
+                            <div style="flex:1"><b>${v.name}</b><br><small style="color:#00A173">${v.developer || 'Nexus Official'}</small></div>
+                            <!-- EDIT BUTTON ADDED HERE -->
+                            <button class="btn btn-small bg-yellow" onclick="window.editLiveApp('${k}')">Edit</button>
+                            <button class="btn btn-small bg-red" onclick="window.deleteLive('${k}')">Del</button>
+                        </div>
+                    `;
                 });
             });
 
+            // Pending Apps
             onValue(ref(db, 'pending_apps'), s => {
                 const d = s.val();
                 pendingAppsData = d || {};
@@ -308,54 +373,77 @@
                 let count = 0;
                 if(d) Object.entries(d).forEach(([k, v]) => {
                     count++;
-                    list.innerHTML += `<div class="game-row"><img src="${v.logo}"><div style="flex:1"><b>${v.name}</b><br><small style="color:#aaa">Dev: ${v.developer}</small><br><span style="font-size:11px; color:#00A173; cursor:pointer;" onclick="window.openTestLink('${v.download}')"><i class="fas fa-link"></i> Test Link</span></div><button class="btn btn-small bg-blue" onclick="window.reviewReq('${k}')">Review</button></div>`;
+                    const badge = v.requestType === "Update" ? '<span style="background:orange;color:black;padding:2px;font-size:10px;">UPDATE</span>' : '<span style="background:lime;color:black;padding:2px;font-size:10px;">NEW</span>';
+                    list.innerHTML += `
+                        <div class="req-card">
+                            <img src="${v.logo}" class="req-img">
+                            <div class="req-info">
+                                <b>${v.name}</b> ${badge}<br>
+                                <small style="color:#aaa">Dev: ${v.developer}</small>
+                            </div>
+                            <div class="req-actions">
+                                <button class="btn btn-view" onclick="window.reviewReq('${k}')">Review</button>
+                            </div>
+                        </div>
+                    `;
                 });
                 document.getElementById('req-count').innerText = count;
             });
         }
 
-        window.openTestLink = (url) => window.open(url, '_blank');
-
-        // --- REVIEW MODAL LOGIC ---
+        // --- REVIEW SYSTEM ---
         window.reviewReq = (id) => {
             currentReviewId = id;
-            const app = pendingAppsData[id];
+            currentAppData = pendingAppsData[id];
             
-            document.getElementById('m-title').innerText = app.name;
-            document.getElementById('m-icon').src = app.logo;
-            document.getElementById('m-dev').innerText = app.developer;
-            document.getElementById('m-cat').innerText = `${app.type} / ${app.category}`;
-            document.getElementById('m-price').innerText = app.priceType === 'Paid' ? app.price : 'Free';
-            document.getElementById('m-desc').innerText = app.desc;
-            
-            // Populate Download Link Area
-            const linkText = document.getElementById('m-link-text');
-            linkText.innerText = app.download;
-            linkText.href = app.download;
+            document.getElementById('m-title').innerText = currentAppData.name;
+            document.getElementById('m-icon').src = currentAppData.logo;
+            document.getElementById('m-req-type').innerText = currentAppData.requestType || "New";
+            document.getElementById('m-dev').innerText = currentAppData.developer;
+            document.getElementById('m-cat').innerText = currentAppData.category;
+            document.getElementById('m-price').innerText = currentAppData.price;
+            document.getElementById('m-desc').innerText = currentAppData.desc;
+            document.getElementById('m-link-text').innerText = currentAppData.download;
+            document.getElementById('m-link-text').href = currentAppData.download;
             
             document.getElementById('review-modal').style.display = 'flex';
         };
 
-        window.openTestDownload = () => {
-            const url = document.getElementById('m-link-text').href;
-            window.open(url, '_blank');
-        };
+        window.openTestDownload = () => window.open(currentAppData.download, '_blank');
 
         window.approveApp = () => {
             if(!currentReviewId) return;
-            const app = pendingAppsData[currentReviewId];
-            const liveData = { ...app, status: "Live", downloadCount: 0 };
-            
-            push(ref(db, 'games'), liveData).then(() => {
-                remove(ref(db, 'pending_apps/' + currentReviewId));
-                alert("App Approved!");
-                document.getElementById('review-modal').style.display = 'none';
-            });
+            const liveData = { ...currentAppData, status: "Live" };
+            delete liveData.requestType;
+            delete liveData.originalId;
+            if(!liveData.downloadCount) liveData.downloadCount = 0;
+
+            // Handle Updates vs New
+            if (currentAppData.originalId) {
+                 // Update existing app
+                 update(ref(db, 'games/' + currentAppData.originalId), liveData).then(() => {
+                    remove(ref(db, 'pending_apps/' + currentReviewId));
+                    alert("Update Approved!");
+                    document.getElementById('review-modal').style.display = 'none';
+                 });
+            } else {
+                // Publish new app
+                push(ref(db, 'games'), liveData).then(() => {
+                    remove(ref(db, 'pending_apps/' + currentReviewId));
+                    alert("App Approved!");
+                    document.getElementById('review-modal').style.display = 'none';
+                });
+            }
         };
 
-        window.rejectReq = (id) => { if(confirm("Reject?")) remove(ref(db, 'pending_apps/'+id)); };
-        window.rejectApp = () => { window.rejectReq(currentReviewId); document.getElementById('review-modal').style.display='none'; };
-        window.deleteLive = (id) => { if(confirm("Delete?")) remove(ref(db, 'games/'+id)); };
+        window.rejectApp = () => {
+            if(confirm("Reject submission?")) {
+                remove(ref(db, 'pending_apps/' + currentReviewId));
+                document.getElementById('review-modal').style.display = 'none';
+            }
+        };
+
+        window.deleteLive = (id) => { if(confirm("Delete live app?")) remove(ref(db, 'games/'+id)); };
 
     </script>
 </body>
