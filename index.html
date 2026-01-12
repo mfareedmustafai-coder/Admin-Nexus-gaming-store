@@ -5,36 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Console</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #1f1f1f; color: #fff; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: #1f1f1f; color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1f1f1f; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .login-box { background: #282828; padding: 40px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #333; }
+        .login-box { background: #282828; padding: 40px; border-radius: 15px; width: 350px; text-align: center; border: 1px solid #333; }
         
         #dashboard { display: none; width: 100%; height: 100%; }
         .sidebar { width: 250px; background: #282828; padding: 20px; border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .main { flex: 1; padding: 40px; overflow-y: auto; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
         
-        .menu-item { padding: 12px 15px; cursor: pointer; color: #aaa; border-radius: 8px; margin-bottom: 5px; font-weight: 500; display:flex; gap:10px; align-items:center; }
+        .menu-item { padding: 15px; cursor: pointer; color: #aaa; border-radius: 5px; margin-bottom: 5px; font-weight: 500; display:flex; gap:10px; align-items:center; }
         .menu-item:hover, .menu-item.active { background: #383838; color: white; }
         .badge { background: #ff4757; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: auto; }
 
-        input, textarea, select { width: 100%; background: #121212; border: 1px solid #333; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; font-size: 13px; }
-        label { display: block; color: #aaa; margin-bottom: 5px; font-size: 13px; }
+        input, textarea, select { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        label { display: block; color: #aaa; margin-bottom: 5px; font-size: 14px; }
         
-        .btn { background: #00c851; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn-red { background: #ff4444; } .btn-blue { background: #3498db; } .btn-yellow { background: #ffa502; color: black; }
-        .file-box { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 15px; background: #222; }
+        .btn { background: #00A173; color: black; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-small { width: auto; padding: 6px 15px; font-size: 12px; border-radius: 5px; margin-left: 5px; }
+        
+        .file-box { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
         .preview-img { height: 60px; margin-top: 10px; display: none; object-fit: contain; margin-left: auto; margin-right: auto; }
-        .two-col { display: flex; gap: 15px; }
-
-        /* LIST & MODAL */
-        .req-card, .game-row { background: #2d2d2d; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #333; }
-        .req-img, .game-row img { width: 50px; height: 50px; border-radius: 8px; margin-right: 15px; object-fit: cover; background: #000; }
         
+        .two-col { display: flex; gap: 15px; }
+        
+        .req-card, .game-row { display: flex; align-items: center; background: #282828; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; }
+        .req-img, .game-row img { width: 50px; height: 50px; border-radius: 10px; margin-right: 15px; object-fit:cover; }
+        .req-info { flex:1; }
+
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal-content { background: #222; padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid #444; }
+        .modal-content { background: #222; padding: 30px; border-radius: 15px; width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid #444; }
+        .info-row { margin-bottom: 10px; font-size: 14px; color: #ccc; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .info-label { font-weight: bold; color: #00d4ff; display: block; margin-bottom: 2px; }
+        .download-link-text { font-size: 11px; color: #aaa; word-break: break-all; font-family: monospace; background: #111; padding: 5px; border-radius: 4px; display: block; margin-top: 5px; }
+
+        .bg-red { background: #ff4757; color: white; }
+        .bg-blue { background: #3498db; color: white; }
+        .bg-yellow { background: #ffa502; color: black; }
     </style>
 </head>
 <body>
@@ -42,43 +50,55 @@
     <div id="login-screen">
         <div class="login-box">
             <h2 style="color:#00A173; margin-top:0">Nexus Admin</h2>
-            <input type="email" id="admin-email" placeholder="Email"><input type="password" id="admin-pass" placeholder="Password"><button class="btn" onclick="window.adminLogin()">Login</button>
+            <input type="email" id="admin-email" placeholder="Admin Email">
+            <input type="password" id="admin-pass" placeholder="Password">
+            <button class="btn" onclick="window.adminLogin()">Login</button>
         </div>
     </div>
 
     <div id="dashboard">
         <div class="sidebar">
-            <h2 style="color:#00A173; margin-bottom:30px;">Nexus Console</h2>
-            <div class="menu-item active" onclick="window.showView('publish')"><i class="fas fa-upload"></i> Publish / Edit</div>
-            <div class="menu-item" onclick="window.showView('requests')"><i class="fas fa-inbox"></i> Requests <span class="badge" id="req-count">0</span></div>
-            <div class="menu-item" onclick="window.showView('live')"><i class="fas fa-box"></i> Live Apps</div>
-            <div style="margin-top:auto"><button class="btn btn-red" onclick="window.adminLogout()">Logout</button></div>
+            <h2 style="color:#00A173">Console</h2>
+            <div class="menu-item active" onclick="window.showView('publish')"><i class="fas fa-plus-circle"></i> Publish / Edit</div>
+            <div class="menu-item" onclick="window.showView('requests')"><i class="fas fa-clock"></i> Requests <span class="badge" id="req-count">0</span></div>
+            <div class="menu-item" onclick="window.showView('live')"><i class="fas fa-check-circle"></i> Live Apps</div>
+            <div style="margin-top:auto"><button class="btn bg-red" onclick="window.adminLogout()">Logout</button></div>
         </div>
 
         <div class="main">
             <!-- PUBLISH VIEW -->
             <div id="view-publish">
-                <h2 style="border-bottom:1px solid #333; padding-bottom:15px; margin-top:0;">Publish New App</h2>
-                <div style="background:#222; padding:30px; border-radius:12px;">
-                    <label>App Name</label><input type="text" id="name" placeholder="Enter App Name">
-                    <div class="two-col"><div style="flex:1"><label>Type</label><select id="appType"><option>Game</option><option>App</option></select></div><div style="flex:1"><label>Category</label><select id="appCat"><option>Action</option><option>Racing</option><option>RPG</option><option>Tools</option><option>Social</option></select></div></div>
-                    <div class="two-col"><div style="flex:1"><label>Size</label><input type="text" id="appSize" placeholder="1.2 GB"></div><div style="flex:1"><label>Age Rating</label><input type="text" id="appAge" placeholder="12+"></div></div>
-                    <div class="two-col"><div style="flex:1"><label>Pricing</label><select id="priceType" onchange="window.togglePrice()"><option value="Free">Free</option><option value="Paid">Paid</option></select></div><div style="flex:1"><label>Price</label><input type="text" id="appPrice" placeholder="Rs. 500" disabled style="opacity:0.5"></div></div>
+                <h1 id="form-title">Publish New App</h1>
+                <div style="background: #282828; padding: 25px; border-radius: 12px;">
+                    <label>App Name</label><input type="text" id="name" placeholder="Name">
+                    <div class="two-col">
+                        <div style="flex:1"><label>Type</label><select id="appType"><option>Game</option><option>App</option></select></div>
+                        <div style="flex:1"><label>Category</label><select id="appCat"><option>Action</option><option>Racing</option><option>RPG</option><option>Tools</option><option>Social</option></select></div>
+                    </div>
+                    <div class="two-col">
+                        <div style="flex:1"><label>Size</label><input type="text" id="appSize" placeholder="1.2 GB"></div>
+                        <div style="flex:1"><label>Age</label><input type="text" id="appAge" placeholder="12+"></div>
+                    </div>
+                    <div class="two-col">
+                        <div style="flex:1"><label>Pricing</label><select id="priceType" onchange="window.togglePrice()"><option value="Free">Free</option><option value="Paid">Paid</option></select></div>
+                        <div style="flex:1"><label>Price</label><input type="text" id="appPrice" placeholder="Rs. 500" disabled style="opacity:0.5"></div>
+                    </div>
+
                     <input type="hidden" id="appDeveloper">
+                    <label>Icon</label>
+                    <div class="file-box" onclick="document.getElementById('iconFile').click()">Click to Upload Icon<img id="iconPrev" class="preview-img"></div>
+                    <input type="file" id="iconFile" hidden accept="image/*" onchange="window.handleIcon(this)">
+                    <input type="hidden" id="iconBase64">
+                    <label>Download Link</label><input type="text" id="link" placeholder="URL">
                     
-                    <label>App Icon</label><div class="file-box" onclick="document.getElementById('iconFile').click()"><i class="fas fa-cloud-upload-alt"></i> Click to Upload Icon<img id="iconPrev" class="preview-img"></div><input type="file" id="iconFile" hidden accept="image/*" onchange="window.handleIcon(this)"><input type="hidden" id="iconBase64">
-                    
-                    <label>Download Link</label><input type="text" id="link" placeholder="Direct Download URL">
-                    
-                    <!-- NEW VIDEO INPUT -->
-                    <label>Video URL (Optional)</label><input type="text" id="video" placeholder="YouTube Video Link">
+                    <label>Video URL (Optional)</label><input type="text" id="video" placeholder="YouTube Link">
 
-                    <label>Description</label><textarea id="desc" rows="4" placeholder="App description..."></textarea>
-                    
-                    <label>Screenshots</label><div id="sc-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;"></div><button class="btn" style="background:#444; width:auto; margin-bottom:20px; font-size:12px;" onclick="window.addScField()">+ Add Screenshot</button>
+                    <label>Description</label><textarea id="desc" rows="3"></textarea>
+                    <label>Screenshots</label><div id="sc-container"></div>
+                    <button class="btn" style="background:#444; color:white; margin-bottom:15px;" onclick="window.addScField()">+ Screenshot</button>
 
-                    <button class="btn" id="btn-submit" onclick="window.publishApp()">PUBLISH APP</button>
-                    <button class="btn btn-red" id="btn-cancel" style="display:none; margin-top:10px;" onclick="window.resetForm()">CANCEL EDIT</button>
+                    <button class="btn" id="btn-submit" onclick="window.publishApp()">PUBLISH</button>
+                    <button class="btn bg-red" id="btn-cancel" style="display:none; margin-top:10px;" onclick="window.resetForm()">CANCEL EDIT</button>
                 </div>
             </div>
 
@@ -93,13 +113,27 @@
     <!-- REVIEW MODAL -->
     <div id="review-modal" class="modal">
         <div class="modal-content">
-            <h3 id="m-title" style="margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;">Review</h3>
-            <div style="text-align:center; margin-bottom:20px;"><img id="m-icon" style="width:80px; height:80px; border-radius:12px;"></div>
-            <p><b>Dev:</b> <span id="m-dev"></span> | <b>Type:</b> <span id="m-type"></span></p>
-            <p><b>Video:</b> <a id="m-video" href="#" target="_blank" style="color:#00A173">View</a></p>
-            <div style="background:#111; padding:10px; border-radius:6px; margin:15px 0;"><a id="m-link-text" href="#" target="_blank" style="color:#aaa; font-size:12px; word-break:break-all;">Link</a></div>
-            <div style="display:flex; gap:10px;"><button class="btn btn-blue" onclick="window.approveApp()">APPROVE</button><button class="btn btn-red" onclick="window.rejectApp()">REJECT</button></div>
-            <button class="btn" style="background:none; color:#888; margin-top:10px;" onclick="document.getElementById('review-modal').style.display='none'">Close</button>
+            <h2 id="m-title" style="border-bottom:1px solid #333; padding-bottom:10px;">App Name</h2>
+            <div style="text-align:center; margin-bottom:20px;"><img id="m-icon" style="width:80px; height:80px; border-radius:15px; object-fit:cover;"></div>
+            
+            <div class="info-row"><span class="info-label">Request Type:</span> <span id="m-req-type" style="color:orange; font-weight:bold;"></span></div>
+            <div class="info-row"><span class="info-label">Developer:</span> <span id="m-dev"></span></div>
+            <div class="info-row"><span class="info-label">Category:</span> <span id="m-cat"></span></div>
+            <div class="info-row"><span class="info-label">Price:</span> <span id="m-price"></span></div>
+            <div class="info-row"><span class="info-label">Description:</span> <span id="m-desc"></span></div>
+            <div class="info-row"><span class="info-label">Video:</span> <span id="m-video"></span></div>
+            
+            <div style="margin:20px 0; border-top:1px solid #444; padding-top:10px;">
+                <span class="info-label"><i class="fas fa-link"></i> Download Link:</span>
+                <a id="m-link-text" href="#" target="_blank" class="download-link-text">...</a>
+                <button class="btn" style="background:#00d4ff; color:black; margin-top:10px;" onclick="window.openTestDownload()">Download & Check App</button>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn bg-blue" style="flex:1" onclick="window.approveApp()">APPROVE</button>
+                <button class="btn bg-red" style="flex:1" onclick="window.rejectApp()">REJECT</button>
+            </div>
+            <button onclick="document.getElementById('review-modal').style.display='none'" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;">Close</button>
         </div>
     </div>
 
@@ -108,7 +142,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
         import { getDatabase, ref, push, update, remove, onValue, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-        // --- PASTE FIREBASE CONFIG HERE ---
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCn1FBaxDwbvC28VWXAcq557uCidl-JHy0",
             authDomain: "app-store-6b5d4.firebaseapp.com",
@@ -123,44 +157,187 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let currentEditId=null, liveAppsData={}, pendingAppsData={}, currentReviewId=null, currentAppData=null;
+        let currentEditId = null; 
+        let liveAppsData = {}; 
+        let pendingAppsData = {}; 
+        let currentReviewId = null;
+        let currentAppData = null;
 
-        onAuthStateChanged(auth, u=>{if(u){document.getElementById('login-screen').style.display='none';document.getElementById('dashboard').style.display='flex';loadData()}else{document.getElementById('login-screen').style.display='flex';document.getElementById('dashboard').style.display='none'}});
-        window.adminLogin=()=>signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e=>alert(e.message));
-        window.adminLogout=()=>signOut(auth);
-        window.showView=(id)=>{['publish','requests','live'].forEach(v=>document.getElementById('view-'+v).style.display='none');document.getElementById('view-'+id).style.display='block';};
+        // AUTH
+        onAuthStateChanged(auth, u => {
+            if(u) { document.getElementById('login-screen').style.display='none'; document.getElementById('dashboard').style.display='flex'; loadData(); }
+            else { document.getElementById('login-screen').style.display='flex'; document.getElementById('dashboard').style.display='none'; }
+        });
+        window.adminLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e=>alert(e.message));
+        window.adminLogout = () => signOut(auth);
 
-        const compress=(f)=>new Promise(r=>{const rd=new FileReader();rd.readAsDataURL(f);rd.onload=e=>{const i=new Image();i.src=e.target.result;i.onload=()=>{const c=document.createElement('canvas'),s=500/i.width;c.width=500;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',0.7))}}});
-        window.handleIcon=async(i)=>{if(i.files[0]){const b=await compress(i.files[0]);document.getElementById('iconBase64').value=b;document.getElementById('iconPrev').src=b;document.getElementById('iconPrev').style.display='block';}};
-        window.togglePrice=()=>{const t=document.getElementById('priceType').value;const i=document.getElementById('appPrice');if(t==='Paid'){i.disabled=false;i.style.opacity=1}else{i.disabled=true;i.style.opacity=0.5;i.value=''}};
-        window.addScField=()=>{const d=document.createElement('div');d.innerHTML=`<input type="file" class="sc-file" accept="image/*" onchange="window.handleSc(this)" style="margin-bottom:5px">`;document.getElementById('sc-container').appendChild(d)};
-        window.handleSc=async(i)=>{if(i.files[0]){const b=await compress(i.files[0]);i.setAttribute('data-b64', b); i.style.border="1px solid #00d4ff";}};
-
-        window.publishApp=()=>{
-            const data={ name:document.getElementById('name').value, type:document.getElementById('appType').value, category:document.getElementById('appCat').value, size:document.getElementById('appSize').value, age:document.getElementById('appAge').value, priceType:document.getElementById('priceType').value, price:document.getElementById('appPrice').value||"Free", logo:document.getElementById('iconBase64').value, download:document.getElementById('link').value, video:document.getElementById('video').value, desc:document.getElementById('desc').value, developer:document.getElementById('appDeveloper').value||"Nexus Official", timestamp:Date.now(), status:"Live" };
-            const sc=[]; document.querySelectorAll('.sc-file').forEach(i=>{const v=i.getAttribute('data-b64');if(v)sc.push(v)});
-            if(sc.length>0)data.screenshots=sc;
-            if(currentEditId&&sc.length===0&&liveAppsData[currentEditId].screenshots)data.screenshots=liveAppsData[currentEditId].screenshots;
-            if(!data.name||!data.download)return alert("Missing Fields");
-            if(currentEditId){update(ref(db,'games/'+currentEditId),data).then(()=>{alert("Updated");window.resetForm()})}else{data.downloadCount=0;push(ref(db,'games'),data).then(()=>{alert("Published");window.resetForm()})}
+        window.showView = (id) => {
+            ['publish','requests','live'].forEach(v => document.getElementById('view-'+v).style.display='none');
+            document.getElementById('view-'+id).style.display='block';
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         };
 
-        window.editApp=(id)=>{
-            currentEditId=id; const app=liveAppsData[id]; window.showView('publish');
-            document.getElementById('name').value=app.name; document.getElementById('link').value=app.download; document.getElementById('video').value=app.video||""; document.getElementById('desc').value=app.desc; document.getElementById('iconBase64').value=app.logo; document.getElementById('iconPrev').src=app.logo; document.getElementById('iconPrev').style.display='block';
-            document.getElementById('btn-submit').innerText="UPDATE APP"; document.getElementById('btn-cancel').style.display='block';
-        };
-        window.resetForm=()=>{currentEditId=null;document.querySelectorAll('input,textarea').forEach(i=>i.value="");document.getElementById('iconPrev').style.display='none';document.getElementById('btn-submit').innerText="PUBLISH APP";document.getElementById('btn-cancel').style.display='none';};
+        // FORM
+        const compress = (f) => new Promise(r => { const rd=new FileReader(); rd.readAsDataURL(f); rd.onload=e=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{ const c=document.createElement('canvas'),s=500/i.width; c.width=500; c.height=i.height*s; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.7))}}});
+        
+        window.handleIcon = async (i) => { if(i.files[0]){const b=await compress(i.files[0]);document.getElementById('iconBase64').value=b;document.getElementById('iconPrev').src=b;document.getElementById('iconPrev').style.display='block';}};
+        window.togglePrice = () => { const t=document.getElementById('priceType').value; const i=document.getElementById('appPrice'); if(t==='Paid'){i.disabled=false;i.style.opacity=1}else{i.disabled=true;i.style.opacity=0.5;i.value=''} };
+        window.addScField = () => { const d=document.createElement('div'); d.innerHTML=`<input type="file" class="sc-file" accept="image/*" onchange="window.handleSc(this)" style="margin-bottom:5px">`; document.getElementById('sc-container').appendChild(d); };
+        window.handleSc = async (i) => { if(i.files[0]){const b=await compress(i.files[0]);i.setAttribute('data-b64', b); i.style.border="1px solid #00d4ff";}};
 
-        function loadData(){
-            onValue(ref(db,'games'),s=>{liveAppsData=s.val()||{};const l=document.getElementById('list-live');l.innerHTML="";if(liveAppsData)Object.entries(liveAppsData).reverse().forEach(([k,v])=>{l.innerHTML+=`<div class="game-row"><img src="${v.logo}"><div style="flex:1"><b>${v.name}</b><br><small>${v.developer}</small></div><button class="btn btn-small bg-yellow" onclick="window.editApp('${k}')">Edit</button><button class="btn btn-small bg-red" onclick="window.deleteLive('${k}')">Del</button></div>`})});
-            onValue(ref(db,'pending_apps'),s=>{pendingAppsData=s.val()||{};const l=document.getElementById('list-requests');l.innerHTML="";let c=0;if(pendingAppsData)Object.entries(pendingAppsData).forEach(([k,v])=>{if(v.status!=='Rejected'){c++;l.innerHTML+=`<div class="req-card"><img class="req-img" src="${v.logo}"><div style="flex:1"><b>${v.name}</b><br><small>Dev: ${v.developer}</small></div><button class="btn btn-small bg-blue" onclick="window.reviewReq('${k}')">Review</button></div>`}});document.getElementById('req-count').innerText=c;});
+        window.publishApp = () => {
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = "Processing...";
+            const data = {
+                name: document.getElementById('name').value,
+                type: document.getElementById('appType').value,
+                category: document.getElementById('appCat').value,
+                size: document.getElementById('appSize').value,
+                age: document.getElementById('appAge').value,
+                priceType: document.getElementById('priceType').value,
+                price: document.getElementById('appPrice').value || "Free",
+                logo: document.getElementById('iconBase64').value,
+                download: document.getElementById('link').value,
+                video: document.getElementById('video').value, 
+                desc: document.getElementById('desc').value,
+                developer: document.getElementById('appDeveloper').value || "Nexus Official",
+                timestamp: Date.now(),
+                status: "Live"
+            };
+            const screenshots = []; document.querySelectorAll('.sc-file').forEach(i => { const v=i.getAttribute('data-b64'); if(v) screenshots.push(v); });
+            if(screenshots.length > 0) data.screenshots = screenshots;
+            
+            if(currentEditId && screenshots.length === 0 && liveAppsData[currentEditId].screenshots) {
+                data.screenshots = liveAppsData[currentEditId].screenshots;
+            }
+
+            if(!data.name || !data.download) { btn.innerText = "PUBLISH"; return alert("Missing fields"); }
+
+            if(currentEditId) {
+                update(ref(db, 'games/'+currentEditId), data).then(() => { alert("Updated!"); window.resetForm(); });
+            } else {
+                data.downloadCount = 0;
+                push(ref(db, 'games'), data).then(() => { alert("Published!"); window.resetForm(); });
+            }
+        };
+
+        window.editApp = (id) => {
+            currentEditId = id; const app = liveAppsData[id];
+            window.showView('publish');
+            document.querySelectorAll('.menu-item')[0].classList.add('active');
+            
+            document.getElementById('form-title').innerText = "Edit: " + app.name;
+            document.getElementById('btn-submit').innerText = "UPDATE APP";
+            document.getElementById('btn-cancel').style.display = "block";
+            
+            document.getElementById('name').value = app.name;
+            document.getElementById('appType').value = app.type||'Game';
+            document.getElementById('appCat').value = app.category||'Action';
+            document.getElementById('appSize').value = app.size||'';
+            document.getElementById('appAge').value = app.age||'';
+            document.getElementById('priceType').value = app.priceType||'Free';
+            document.getElementById('appPrice').value = app.price||'';
+            window.togglePrice();
+            
+            document.getElementById('appDeveloper').value = app.developer;
+            document.getElementById('link').value = app.download;
+            document.getElementById('video').value = app.video || "";
+            document.getElementById('desc').value = app.desc;
+            document.getElementById('iconBase64').value = app.logo;
+            document.getElementById('iconPrev').src = app.logo;
+            document.getElementById('iconPrev').style.display = 'block';
+        };
+
+        window.resetForm = () => {
+            currentEditId = null;
+            document.querySelectorAll('input, textarea').forEach(i=>i.value="");
+            document.getElementById('iconPrev').style.display='none';
+            document.getElementById('sc-container').innerHTML="";
+            document.getElementById('form-title').innerText = "Publish New App";
+            document.getElementById('btn-submit').innerText = "PUBLISH";
+            document.getElementById('btn-cancel').style.display = "none";
+            document.getElementById('appDeveloper').value = ""; 
+        };
+
+        // DATA
+        function loadData() {
+            onValue(ref(db, 'games'), s => {
+                liveAppsData = s.val() || {};
+                const list = document.getElementById('list-live'); list.innerHTML="";
+                if(liveAppsData) Object.entries(liveAppsData).reverse().forEach(([k, v]) => {
+                    list.innerHTML += `<div class="game-row"><img src="${v.logo}"><div style="flex:1"><b>${v.name}</b><br><small style="color:#00A173">${v.developer || 'Nexus Official'}</small></div><button class="btn btn-small bg-yellow" onclick="window.editApp('${k}')">Edit</button><button class="btn btn-small bg-red" onclick="window.deleteLive('${k}')">Del</button></div>`;
+                });
+            });
+
+            onValue(ref(db, 'pending_apps'), s => {
+                const d = s.val(); pendingAppsData = d || {};
+                const list = document.getElementById('list-requests'); list.innerHTML="";
+                let count = 0;
+                if(d) Object.entries(d).forEach(([k, v]) => {
+                    if(v.status !== 'Rejected') {
+                        count++;
+                        const badge = v.requestType === "Update" ? '<span style="background:orange;color:black;padding:2px 5px;border-radius:4px;font-size:10px;margin-left:5px;">UPDATE</span>' : '<span style="background:lime;color:black;padding:2px 5px;border-radius:4px;font-size:10px;margin-left:5px;">NEW</span>';
+                        list.innerHTML += `<div class="req-card"><img src="${v.logo}" class="req-img"><div class="req-info"><b>${v.name}</b> ${badge}<br><small>Dev: ${v.developer}</small></div><button class="btn btn-view" onclick="window.reviewReq('${k}')">Review</button></div>`;
+                    }
+                });
+                document.getElementById('req-count').innerText = count;
+            });
         }
 
-        window.reviewReq=(id)=>{ currentReviewId=id; currentAppData=pendingAppsData[id]; document.getElementById('m-title').innerText=currentAppData.name; document.getElementById('m-icon').src=currentAppData.logo; document.getElementById('m-dev').innerText=currentAppData.developer; document.getElementById('m-link-text').href=currentAppData.download; document.getElementById('m-link-text').innerText=currentAppData.download; document.getElementById('m-video').href=currentAppData.video||"#"; document.getElementById('review-modal').style.display='flex'; };
-        window.approveApp=()=>{push(ref(db,'games'),{...currentAppData,status:"Live",downloadCount:0}).then(()=>{remove(ref(db,'pending_apps/'+currentReviewId));alert("Approved!");document.getElementById('review-modal').style.display='none'})};
-        window.rejectApp=()=>{if(confirm("Reject?"))update(ref(db,'pending_apps/'+currentReviewId),{status:'Rejected'}).then(()=>{alert("Rejected");document.getElementById('review-modal').style.display='none'})};
-        window.deleteLive=(id)=>{if(confirm("Delete?"))remove(ref(db,'games/'+id))};
+        // REVIEW
+        window.reviewReq = (id) => {
+            currentReviewId = id; currentAppData = pendingAppsData[id];
+            document.getElementById('m-title').innerText = currentAppData.name;
+            document.getElementById('m-icon').src = currentAppData.logo;
+            document.getElementById('m-req-type').innerText = currentAppData.requestType || "New";
+            document.getElementById('m-dev').innerText = currentAppData.developer;
+            document.getElementById('m-cat').innerText = currentAppData.category;
+            document.getElementById('m-price').innerText = currentAppData.priceType === 'Paid' ? currentAppData.price : 'Free';
+            document.getElementById('m-desc').innerText = currentAppData.desc;
+            document.getElementById('m-video').innerText = currentAppData.video || "No Video";
+            
+            const linkText = document.getElementById('m-link-text');
+            linkText.innerText = currentAppData.download;
+            linkText.href = currentAppData.download;
+            
+            document.getElementById('review-modal').style.display = 'flex';
+        };
+
+        window.openTestDownload = () => window.open(currentAppData.download, '_blank');
+
+        window.approveApp = () => {
+            if(!currentReviewId) return;
+            const liveData = { ...currentAppData, status: "Live" };
+            delete liveData.originalId; delete liveData.requestType;
+            if(!liveData.downloadCount) liveData.downloadCount = 0;
+
+            if (currentAppData.originalId) { // Update existing
+                update(ref(db, 'games/' + currentAppData.originalId), liveData).then(() => {
+                    remove(ref(db, 'pending_apps/' + currentReviewId));
+                    alert("Update Approved!");
+                    document.getElementById('review-modal').style.display = 'none';
+                });
+            } else { // New app
+                push(ref(db, 'games'), liveData).then(() => {
+                    remove(ref(db, 'pending_apps/' + currentReviewId));
+                    alert("App Approved!");
+                    document.getElementById('review-modal').style.display = 'none';
+                });
+            }
+        };
+
+        window.rejectApp = () => {
+            if(confirm("Reject submission?")) {
+                update(ref(db, 'pending_apps/' + currentReviewId), { status: 'Rejected' }).then(() => {
+                    document.getElementById('review-modal').style.display = 'none';
+                    alert("Rejected");
+                });
+            }
+        };
+
+        window.deleteLive = (id) => { if(confirm("Delete live app?")) remove(ref(db, 'games/'+id)); };
+
     </script>
 </body>
 </html>
